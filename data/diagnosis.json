@@ -1,0 +1,73 @@
+{
+  "title": "Mi English 工程健康诊断",
+  "description": "勾选你的项目现状，看看「工程成熟度」几分",
+  "questions": [
+    { "text": "有用 Git 做版本管理", "weight": 12, "relatedStages": ["04"], "options": [
+      { "text": "有，每次改动都提交", "score": 12 },
+      { "text": "有，但不太规律", "score": 6 },
+      { "text": "没有", "score": 0 }
+    ]},
+    { "text": "写过正式的 PRD 或需求文档", "weight": 10, "relatedStages": ["01", "02"], "options": [
+      { "text": "有，而且会更新", "score": 10 },
+      { "text": "有个简单的", "score": 5 },
+      { "text": "从来没有", "score": 0 }
+    ]},
+    { "text": "明确知道目标用户是谁", "weight": 10, "relatedStages": ["01"], "options": [
+      { "text": "有详细的用户画像", "score": 10 },
+      { "text": "大概知道", "score": 5 },
+      { "text": "没想过", "score": 0 }
+    ]},
+    { "text": "理解前端/后端/数据库/API 的关系", "weight": 10, "relatedStages": ["03"], "options": [
+      { "text": "能给别人解释", "score": 10 },
+      { "text": "大概知道", "score": 5 },
+      { "text": "不太清楚", "score": 0 }
+    ]},
+    { "text": "有写过测试用例", "weight": 10, "relatedStages": ["05"], "options": [
+      { "text": "有系统的测试文档", "score": 10 },
+      { "text": "自己手动测过", "score": 4 },
+      { "text": "没有", "score": 0 }
+    ]},
+    { "text": "部署上线流程清楚", "weight": 8, "relatedStages": ["06"], "options": [
+      { "text": "熟练，能自己操作", "score": 8 },
+      { "text": "做过但记不太清", "score": 4 },
+      { "text": "不清楚", "score": 0 }
+    ]},
+    { "text": "有版本号管理（如 v2.6）", "weight": 8, "relatedStages": ["04"], "options": [
+      { "text": "有，遵循语义化版本号", "score": 8 },
+      { "text": "有版本号但随便编的", "score": 4 },
+      { "text": "没有版本号", "score": 0 }
+    ]},
+    { "text": "有错误监控（如 Sentry）", "weight": 8, "relatedStages": ["08"], "options": [
+      { "text": "有，能收到报错通知", "score": 8 },
+      { "text": "用 console.log 手动看", "score": 3 },
+      { "text": "不知道有没有错误", "score": 0 }
+    ]},
+    { "text": "有用户数据分析（如 GA）", "weight": 8, "relatedStages": ["08"], "options": [
+      { "text": "有，定期看数据", "score": 8 },
+      { "text": "装了但不太看", "score": 3 },
+      { "text": "没有", "score": 0 }
+    ]},
+    { "text": "有 CI/CD 自动部署", "weight": 8, "relatedStages": ["07"], "options": [
+      { "text": "有，push 自动部署", "score": 8 },
+      { "text": "手动部署", "score": 4 },
+      { "text": "不知道 CI/CD 是什么", "score": 0 }
+    ]},
+    { "text": "有更新日志（Changelog）", "weight": 4, "relatedStages": ["04"], "options": [
+      { "text": "有，每个版本都写", "score": 4 },
+      { "text": "偶尔写", "score": 2 },
+      { "text": "没有", "score": 0 }
+    ]},
+    { "text": "能高效地跟 AI 描述需求", "weight": 4, "relatedStages": ["04"], "options": [
+      { "text": "返工率很低", "score": 4 },
+      { "text": "经常需要来回调整", "score": 2 },
+      { "text": "经常做出来不是我要的", "score": 0 }
+    ]}
+  ],
+  "maxScore": 100,
+  "scoreRanges": [
+    { "min": 0, "max": 25, "label": "🔴 新手村", "emoji": "🏚️", "message": "工程基础薄弱，建议从 Stage 01 开始系统学习。重点补：需求分析、技术方案、版本管理。" },
+    { "min": 26, "max": 50, "label": "🟡 有基础但有盲区", "emoji": "🏗️", "message": "你已经在做了，但方法不够系统。重点查漏补缺，特别关注分数低的阶段。" },
+    { "min": 51, "max": 75, "label": "🟢 基本到位", "emoji": "🏠", "message": "不错！主要流程已经跑通了。关注细节优化：测试、监控、数据驱动。" },
+    { "min": 76, "max": 100, "label": "🟢 工程化达标", "emoji": "🏰", "message": "很棒！你的项目工程化程度已经超过大部分个人项目了。" }
+  ]
+}
