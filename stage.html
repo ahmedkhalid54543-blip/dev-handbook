@@ -18,7 +18,7 @@
 
     <section id="stage-hero" class="card hero"></section>
 
-    <section class="card" style="margin-bottom:16px;">
+    <section id="stage-toc" class="card" style="margin-bottom:16px;">
       <button id="toc-toggle" class="collapsible-toggle">
         <span>章节目录</span>
         <span>展开</span>
@@ -30,7 +30,7 @@
 
     <div id="sections-container"></div>
 
-    <section class="card" style="margin-bottom:16px;">
+    <section id="stage-prompts" class="card" style="margin-bottom:16px;">
       <div class="section-title">AI 协作区</div>
       <p class="muted">复制模板直接使用，避免踩坑</p>
       <div id="prompt-templates" style="display:grid; gap:12px; margin-top:12px;"></div>
@@ -39,31 +39,34 @@
       <div id="ai-fails" style="display:grid; gap:12px; margin-top:12px;"></div>
     </section>
 
-    <section class="card" style="margin-bottom:16px;">
+    <section id="stage-exercises" class="card" style="margin-bottom:16px;">
       <div class="section-title">练习挑战</div>
       <div id="exercise-list" style="margin-top:12px;"></div>
     </section>
 
-    <section class="card" style="margin-bottom:16px;">
+    <section id="stage-checklist" class="card" style="margin-bottom:16px;">
       <div class="section-title">Checklist</div>
       <div id="checklist"></div>
     </section>
 
-    <section class="card" style="margin-bottom:16px;">
+    <section id="stage-next" class="card" style="margin-bottom:16px;">
       <div class="section-title">下一关提示</div>
       <p id="stage-link" class="muted"></p>
     </section>
 
     <div id="bottom-stage-nav" class="bottom-stage-nav"></div>
 
-    <div id="stage-loading" class="muted">加载中...</div>
+    <div id="stage-loading" class="muted loading">
+      <span class="loading-spinner" aria-hidden="true"></span>
+      <span>加载中...</span>
+    </div>
   </div>
 
   <nav class="bottom-nav">
-    <a href="index.html" data-page="home">首页</a>
-    <a href="#" data-page="lab">Prompt 实验室</a>
-    <a href="#" data-page="glossary">术语表</a>
-    <a href="#" data-page="progress">进度</a>
+    <a href="index.html" data-page="home"><span class="nav-icon">🏠</span><span>首页</span></a>
+    <a href="#" data-page="lab"><span class="nav-icon">🧪</span><span>Prompt 实验室</span></a>
+    <a href="#" data-page="glossary"><span class="nav-icon">📖</span><span>术语表</span></a>
+    <a href="#" data-page="progress"><span class="nav-icon">📊</span><span>进度</span></a>
   </nav>
 
   <script src="js/app.js"></script>

@@ -9,18 +9,51 @@ function renderDiagnosis(containerId) {
 
   let loaded = false;
 
-  const togglePanel = async () => {
+  const setLoading = (message) => {
+    loading.classList.add('loading');
+    loading.classList.remove('loading-error');
+    loading.innerHTML = `
+      <span class="loading-spinner" aria-hidden="true"></span>
+      <span>${message}</span>
+    `;
+    loading.hidden = false;
+  };
+
+  const setError = (message) => {
+    loading.classList.remove('loading');
+    loading.classList.add('loading-error');
+    loading.innerHTML = `
+      <span>${message}</span>
+      <div class="loading-actions">
+        <button class="btn secondary" type="button" data-diagnosis-retry>重试加载</button>
+      </div>
+    `;
+    loading.hidden = false;
+    const retryBtn = loading.querySelector('[data-diagnosis-retry]');
+    if (retryBtn) {
+      retryBtn.addEventListener('click', loadQuiz);
+    }
+  };
+
+  const loadQuiz = async () => {
+    if (loaded) return;
+    setLoading('加载中...');
+    try {
+      const response = await fetch('data/diagnosis.json');
+      if (!response.ok) throw new Error('Diagnosis fetch failed');
+      const data = await response.json();
+      buildQuiz(content, data);
+      loaded = true;
+      loading.hidden = true;
+    } catch (err) {
+      setError('加载失败，请稍后重试。');
+    }
+  };
+
+  const togglePanel = () => {
     panel.classList.toggle('open');
     if (!loaded) {
-      loading.textContent = '加载中...';
-      try {
-        const response = await fetch('data/diagnosis.json');
-        const data = await response.json();
-        buildQuiz(content, data);
-        loaded = true;
-      } catch (err) {
-        loading.textContent = '加载失败，请稍后重试。';
-      }
+      loadQuiz();
     }
   };
 

@@ -46,6 +46,18 @@ async function loadRoles() {
   }
 }
 
+const STAGE_COLORS = {
+  '01': '#FF6B35',
+  '02': '#FF5252',
+  '03': '#7C4DFF',
+  '04': '#7C4DFF',
+  '05': '#448AFF',
+  '06': '#448AFF',
+  '07': '#00BCD4',
+  '08': '#66BB6A',
+  '09': '#66BB6A',
+};
+
 async function loadStages(rolesData) {
   const grid = document.getElementById('stages-grid');
   if (!grid) return;
@@ -65,7 +77,7 @@ async function loadStages(rolesData) {
     const sectionsRead = progress ? progress.sectionsRead.length : 0;
 
     let statusLabel = '即将开放';
-    let statusClass = 'gray';
+    let statusClass = 'status-upcoming';
     if (stageData) {
       if (progress && progress.completed) {
         statusLabel = '已完成';
@@ -75,13 +87,15 @@ async function loadStages(rolesData) {
         statusClass = '';
       } else {
         statusLabel = '未开始';
-        statusClass = 'gray';
+        statusClass = 'status-not-started';
       }
     }
 
+    const stageColor = stageData ? stageData.color : (STAGE_COLORS[row.stage] || '#C7CED9');
     const card = document.createElement('a');
     card.className = 'card stage-card';
     card.href = `stage.html?id=${row.stage}`;
+    card.style.borderTop = `4px solid ${stageColor}`;
 
     card.innerHTML = `
       <div class="stage-meta">
@@ -90,7 +104,7 @@ async function loadStages(rolesData) {
       </div>
       <div class="stage-title">${row.title}</div>
       <div class="stage-meta">进度：${sectionsRead}/${sectionsTotal} 节</div>
-      <span class="badge ${statusClass}">${statusLabel}</span>
+      <span class="badge ${statusClass}" style="background:${stageColor}">${statusLabel}</span>
     `;
 
     grid.appendChild(card);

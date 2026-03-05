@@ -104,7 +104,7 @@ function renderMarkdown(text) {
       const textValue = block.trim();
       if (textValue.startsWith('Mi English') || textValue.includes('Mi English 的例子') || textValue.includes('Mi English 案例')) {
         const callout = document.createElement('div');
-        callout.className = 'callout';
+        callout.className = 'callout mi';
         callout.appendChild(paragraph);
         fragment.appendChild(callout);
       } else {
@@ -129,7 +129,10 @@ async function loadStage() {
   const contentRoot = document.getElementById('stage-content');
 
   try {
-    loading.textContent = '加载中...';
+    loading.innerHTML = `
+      <span class="loading-spinner" aria-hidden="true"></span>
+      <span>加载中...</span>
+    `;
     const response = await fetch(`data/stages/stage-${stageId}.json`);
     if (!response.ok) throw new Error('Not found');
     const stage = await response.json();
@@ -142,8 +145,41 @@ async function loadStage() {
       if (target) target.scrollIntoView({ behavior: 'smooth' });
     }
   } catch (err) {
-    loading.textContent = '阶段内容暂未开放，请返回首页选择其他阶段。';
+    renderStageUnavailable(contentRoot, loading, stageId);
   }
+}
+
+function renderStageUnavailable(root, loading, stageId) {
+  const hideIds = [
+    'stage-hero',
+    'sections-container',
+    'stage-toc',
+    'stage-prompts',
+    'stage-exercises',
+    'stage-checklist',
+    'stage-next',
+    'bottom-stage-nav',
+  ];
+  hideIds.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+
+  const topProgress = document.querySelector('[data-stage-progress]');
+  if (topProgress) topProgress.textContent = '即将开放';
+
+  loading.classList.remove('loading');
+  loading.classList.add('loading-error');
+  loading.innerHTML = `
+    <div class="card" style="display:grid; gap:8px;">
+      <strong>阶段 ${stageId} 即将开放</strong>
+      <span class="muted">我们正在完善这一阶段的内容，先去看看其他阶段吧。</span>
+      <div class="loading-actions">
+        <a class="btn primary" href="index.html">返回首页</a>
+        <a class="btn secondary" href="stage.html?id=01">从第一关开始</a>
+      </div>
+    </div>
+  `;
 }
 
 function renderStage(stage) {
@@ -220,10 +256,11 @@ function renderSections(stage, progress) {
   const container = document.getElementById('sections-container');
   container.innerHTML = '';
 
-  stage.sections.forEach((section) => {
+  stage.sections.forEach((section, index) => {
     const card = document.createElement('section');
-    card.className = 'card section-card';
+    card.className = 'card section-card fade-in-up';
     card.id = `section-${section.id}`;
+    card.style.animationDelay = `${index * 80}ms`;
 
     const meta = document.createElement('div');
     meta.className = 'section-meta';
@@ -327,10 +364,10 @@ function renderFails(stage) {
     card.innerHTML = `
       <strong>${fail.title}</strong>
       <div><strong>场景：</strong>${fail.scenario}</div>
-      <div class="callout fail"><strong>坏 Prompt：</strong><br>${escapeHtml(fail.badPrompt)}</div>
+      <div class="callout ai-fail"><strong>坏 Prompt：</strong><br>${escapeHtml(fail.badPrompt)}</div>
       <div><strong>AI 输出：</strong>${fail.aiOutput}</div>
       <div><strong>根因：</strong>${fail.rootCause}</div>
-      <div class="callout"><strong>改进 Prompt：</strong><br>${escapeHtml(fail.fixedPrompt)}</div>
+      <div class="callout ai-fail"><strong>改进 Prompt：</strong><br>${escapeHtml(fail.fixedPrompt)}</div>
     `;
     failRoot.appendChild(card);
   });

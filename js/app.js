@@ -24,7 +24,11 @@ function loadState() {
 }
 
 function saveState(state) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (err) {
+    // storage full or unavailable
+  }
 }
 
 function ensureStageProgress(state, stageId, checklistLength = 0) {
