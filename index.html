@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>App 研发全链路</title>
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="css/components.css" />
+</head>
+<body data-page="home">
+  <div class="container">
+    <header class="page-header">
+      <div class="title-block">
+        <h1>App 研发全链路</h1>
+        <p>9 个阶段带你完成 Mi English v3.0</p>
+      </div>
+      <div class="progress-ring">
+        <svg width="76" height="76">
+          <circle cx="38" cy="38" r="32" stroke="#E6EBF5" stroke-width="8" fill="none" />
+          <circle data-progress cx="38" cy="38" r="32" stroke="url(#progressGradient)" stroke-width="8" stroke-linecap="round" fill="none" />
+          <defs>
+            <linearGradient id="progressGradient" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#FF6B35" />
+              <stop offset="50%" stop-color="#7C4DFF" />
+              <stop offset="100%" stop-color="#66BB6A" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="progress-text">0/9</div>
+      </div>
+    </header>
+
+    <section class="cta-section">
+      <a id="continue-btn" class="btn primary" href="#diagnosis">开始诊断 →</a>
+      <p class="muted">继续上次学习位置，或者从诊断开始</p>
+    </section>
+
+    <section id="diagnosis" class="card diagnosis-card" data-diagnosis-container>
+      <div class="diagnosis-header">
+        <div>
+          <div class="section-title">Mi English 工程健康诊断</div>
+          <p class="muted">10 分钟了解你的工程成熟度</p>
+        </div>
+        <button class="btn secondary" data-diagnosis-toggle>开始诊断</button>
+      </div>
+      <div id="diagnosis-card" class="collapsible" data-diagnosis-panel>
+        <div class="muted" data-diagnosis-loading>点击开始加载诊断</div>
+        <div data-diagnosis-content></div>
+      </div>
+    </section>
+
+    <section class="roles-table">
+      <div class="section-title">角色分工全景图</div>
+      <div id="roles-table"></div>
+    </section>
+
+    <section>
+      <div class="section-title">9 个阶段</div>
+      <div id="stages-grid" class="stages-grid"></div>
+    </section>
+
+    <section class="card" style="margin-top:20px;">
+      <div class="section-title">进度导出 / 导入</div>
+      <p class="muted">保存你的学习记录，换设备继续</p>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:12px;">
+        <button id="export-progress" class="btn secondary">导出进度</button>
+        <label class="btn secondary">
+          导入进度
+          <input id="import-progress" type="file" accept="application/json" style="display:none;" />
+        </label>
+      </div>
+    </section>
+  </div>
+
+  <nav class="bottom-nav">
+    <a href="index.html" data-page="home">首页</a>
+    <a href="#" data-page="lab">Prompt 实验室</a>
+    <a href="#" data-page="glossary">术语表</a>
+    <a href="#" data-page="progress">进度</a>
+  </nav>
+
+  <script src="js/app.js"></script>
+  <script src="js/diagnosis.js"></script>
+  <script src="js/index.js"></script>
+</body>
+</html>
