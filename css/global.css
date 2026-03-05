@@ -315,6 +315,20 @@ pre {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   margin: 12px 0;
+  position: relative;
+}
+
+/* Scroll hint gradient on right edge */
+.table-wrapper::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 24px;
+  background: linear-gradient(to right, transparent, rgba(0,0,0,0.04));
+  pointer-events: none;
+  border-radius: 0 8px 8px 0;
 }
 
 .table-wrapper table {
@@ -355,6 +369,16 @@ pre {
   .container {
     padding: var(--spacing-page-desktop);
     max-width: 1200px;
+  }
+}
+
+/* iOS Safe Area support */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .container {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+  .bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
 
