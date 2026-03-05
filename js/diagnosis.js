@@ -118,6 +118,7 @@ function buildQuiz(root, data) {
     const answers = {};
     let score = 0;
     const recommended = new Set();
+    const prevFirst = window.DevHandbook.loadState().diagnosis.firstScore;
 
     data.questions.forEach((question, index) => {
       const selected = form.querySelector(`input[name="q-${index}"]:checked`);
@@ -133,11 +134,18 @@ function buildQuiz(root, data) {
 
     const result = document.createElement('div');
     result.className = 'quiz-result';
+    const emoji = range ? range.emoji : '📊';
+    const stageLinks = recommended.size
+      ? Array.from(recommended).map(s => `<a href="stage.html?id=${s}" style="color:var(--color-blue);font-weight:600;">Stage ${s}</a>`).join('、')
+      : '无特别建议，继续保持！';
     result.innerHTML = `
-      <div><strong>${range ? range.label : '结果'}</strong> ${range ? range.emoji : ''}</div>
-      <div>得分：${score} / ${data.maxScore}</div>
+      <div class="score-reveal">${emoji}</div>
+      <div style="text-align:center;font-size:24px;font-weight:800;margin:8px 0;">${score} / ${data.maxScore} 分</div>
+      <div style="text-align:center;margin-bottom:12px;"><strong>${range ? range.label : '结果'}</strong></div>
       <p>${range ? range.message : ''}</p>
-      <p>建议优先学习阶段：${recommended.size ? Array.from(recommended).join('、') : '继续保持！'}</p>
+      <p><strong>建议优先学习：</strong>${stageLinks}</p>
+      ${prevFirst !== null && prevFirst !== score ?
+        `<p style="color:var(--color-green);font-weight:600;">📈 比首次提升了 ${score - prevFirst} 分！</p>` : ''}
     `;
 
     const existing = form.querySelector('.quiz-result');

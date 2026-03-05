@@ -446,16 +446,61 @@ function renderChecklist(stage, progress) {
   renderCongrats(stage.id, stageProgress);
 }
 
+const MOTIVATIONS = [
+  { quote: "纸上得来终觉浅，绝知此事要躬行", author: "陆游" },
+  { quote: "The best way to learn is to do.", author: "Richard Branson" },
+  { quote: "每个专家都曾是初学者", author: "" },
+  { quote: "你正在成为能跟 AI 平等对话的产品人", author: "Jarv1s" },
+  { quote: "知道「什么不该做」比「该做什么」更重要", author: "" },
+  { quote: "Mi English v3.0 正在向你招手 👋", author: "" },
+];
+
+function launchConfetti() {
+  const container = document.createElement('div');
+  container.className = 'confetti-container';
+  const colors = ['#FF6B35', '#FF5252', '#7C4DFF', '#448AFF', '#00BCD4', '#66BB6A', '#FFD700'];
+  for (let i = 0; i < 50; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = Math.random() * 1 + 's';
+    piece.style.animationDuration = (2 + Math.random()) + 's';
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    piece.style.width = (6 + Math.random() * 8) + 'px';
+    piece.style.height = (6 + Math.random() * 8) + 'px';
+    container.appendChild(piece);
+  }
+  document.body.appendChild(container);
+  setTimeout(() => container.remove(), 3500);
+}
+
 function renderCongrats(stageId, progress) {
   const root = document.getElementById('checklist');
   if (!root) return;
   const existing = document.querySelector('.congrats');
   if (existing) existing.remove();
+  const motivationEl = document.querySelector('.motivation-card');
+  if (motivationEl) motivationEl.remove();
+
   if (progress.checklist.length && progress.checklist.every(Boolean)) {
     const congrats = document.createElement('div');
     congrats.className = 'congrats';
-    congrats.textContent = '🎉 Checklist 全部完成！';
+    congrats.textContent = '🎉 恭喜！这一关的 Checklist 全部完成！';
     root.appendChild(congrats);
+
+    // Show motivation card
+    const m = MOTIVATIONS[Math.floor(Math.random() * MOTIVATIONS.length)];
+    const card = document.createElement('div');
+    card.className = 'motivation-card';
+    card.innerHTML = `<div class="quote">"${m.quote}"</div>${m.author ? `<div class="author">— ${m.author}</div>` : ''}`;
+    root.parentElement.appendChild(card);
+
+    // Launch confetti (only once per page load)
+    if (!window._confettiLaunched) {
+      window._confettiLaunched = true;
+      launchConfetti();
+    }
   }
 }
 
