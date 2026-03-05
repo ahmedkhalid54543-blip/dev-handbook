@@ -115,7 +115,7 @@ async function initHome() {
   window.DevHandbook.setupExportImport();
 
   setupContinueButton();
-  window.DevHandbook.renderDiagnosis('diagnosis-card');
+  window.DevHandbook.renderDiagnosis('diagnosis');
 
   const rolesData = await loadRoles();
   await loadStages(rolesData);

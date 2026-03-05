@@ -142,8 +142,7 @@ async function loadStage() {
       if (target) target.scrollIntoView({ behavior: 'smooth' });
     }
   } catch (err) {
-    loading.textContent = '阶段内容暂未开放。';
-    contentRoot.innerHTML = '<p class="muted">请返回首页选择其他阶段。</p>';
+    loading.textContent = '阶段内容暂未开放，请返回首页选择其他阶段。';
   }
 }
 
