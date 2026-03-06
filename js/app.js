@@ -1,6 +1,8 @@
 const STORAGE_KEY = 'devHandbook';
 
 const DEFAULT_STATE = {
+  xp: 0,
+  level: 1,
   progress: {},
   diagnosis: {
     firstScore: null,
@@ -12,12 +14,42 @@ const DEFAULT_STATE = {
   exportedAt: null,
 };
 
+function normalizeState(state) {
+  const normalized = { ...structuredClone(DEFAULT_STATE), ...(state || {}) };
+  normalized.xp = Number.isFinite(Number(normalized.xp)) ? Number(normalized.xp) : 0;
+  normalized.level = Number.isFinite(Number(normalized.level)) ? Number(normalized.level) : 1;
+
+  if (!normalized.progress || typeof normalized.progress !== 'object') {
+    normalized.progress = {};
+  }
+
+  Object.keys(normalized.progress).forEach((key) => {
+    const stageProgress = normalized.progress[key];
+    if (!stageProgress || typeof stageProgress !== 'object') {
+      normalized.progress[key] = {
+        completed: false,
+        sectionsRead: [],
+        checklist: [],
+        exercisesDone: [],
+        stageBonusAwarded: false,
+      };
+      return;
+    }
+    if (!Array.isArray(stageProgress.sectionsRead)) stageProgress.sectionsRead = [];
+    if (!Array.isArray(stageProgress.checklist)) stageProgress.checklist = [];
+    if (!Array.isArray(stageProgress.exercisesDone)) stageProgress.exercisesDone = [];
+    if (typeof stageProgress.stageBonusAwarded !== 'boolean') stageProgress.stageBonusAwarded = false;
+  });
+
+  return normalized;
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return structuredClone(DEFAULT_STATE);
     const parsed = JSON.parse(raw);
-    return { ...structuredClone(DEFAULT_STATE), ...parsed };
+    return normalizeState(parsed);
   } catch (err) {
     return structuredClone(DEFAULT_STATE);
   }
@@ -39,6 +71,7 @@ function ensureStageProgress(state, stageId, checklistLength = 0) {
       sectionsRead: [],
       checklist: new Array(checklistLength).fill(false),
       exercisesDone: [],
+      stageBonusAwarded: false,
     };
   } else if (checklistLength && state.progress[key].checklist.length !== checklistLength) {
     const current = state.progress[key].checklist;
@@ -47,6 +80,12 @@ function ensureStageProgress(state, stageId, checklistLength = 0) {
       updated[i] = current[i];
     }
     state.progress[key].checklist = updated;
+  }
+  if (!Array.isArray(state.progress[key].exercisesDone)) {
+    state.progress[key].exercisesDone = [];
+  }
+  if (typeof state.progress[key].stageBonusAwarded !== 'boolean') {
+    state.progress[key].stageBonusAwarded = false;
   }
   return state.progress[key];
 }

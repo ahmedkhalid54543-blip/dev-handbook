@@ -19,6 +19,20 @@ function formatInline(text) {
   return escaped;
 }
 
+function formatInlineWithGlossary(text) {
+  const html = formatInline(text);
+  if (window.DevHandbookGlossary && typeof window.DevHandbookGlossary.wrapTerms === 'function') {
+    return window.DevHandbookGlossary.wrapTerms(html);
+  }
+  return html;
+}
+
+function hapticTap() {
+  if (navigator.vibrate) {
+    navigator.vibrate(10);
+  }
+}
+
 function parseTable(block) {
   const lines = block.trim().split('\n');
   if (lines.length < 2) return null;
@@ -40,7 +54,7 @@ function parseTable(block) {
   const trHead = document.createElement('tr');
   headers.forEach((cell) => {
     const th = document.createElement('th');
-    th.innerHTML = formatInline(cell);
+    th.innerHTML = formatInlineWithGlossary(cell);
     trHead.appendChild(th);
   });
   thead.appendChild(trHead);
@@ -52,7 +66,7 @@ function parseTable(block) {
     const tr = document.createElement('tr');
     splitRow(row).forEach((cell) => {
       const td = document.createElement('td');
-      td.innerHTML = formatInline(cell);
+      td.innerHTML = formatInlineWithGlossary(cell);
       tr.appendChild(td);
     });
     tbody.appendChild(tr);
@@ -69,54 +83,246 @@ function appendContentBlock(fragment, element) {
   fragment.appendChild(element);
 }
 
+function parseDecisionBlock(raw) {
+  const lines = raw
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const scenarioLine = lines.find((line) => line.toLowerCase().startsWith('scenario:'));
+  const scenario = scenarioLine ? scenarioLine.slice(scenarioLine.indexOf(':') + 1).trim() : '';
+  const options = [];
+
+  lines.forEach((line) => {
+    const optionMatch = line.match(/^([A-Z]):\s*(.+)$/);
+    if (!optionMatch) return;
+    const label = optionMatch[1];
+    const payload = optionMatch[2];
+    const resultMarker = payload.indexOf('|result:');
+    const xpMarker = payload.lastIndexOf('|xp:');
+    if (resultMarker === -1 || xpMarker === -1 || xpMarker < resultMarker) return;
+
+    const text = payload.slice(0, resultMarker).trim();
+    const result = payload.slice(resultMarker + 8, xpMarker).trim();
+    const xpRaw = payload.slice(xpMarker + 4).trim();
+    const xp = Number.parseInt(xpRaw, 10);
+
+    options.push({
+      label,
+      text,
+      result,
+      xp: Number.isFinite(xp) ? xp : 0,
+    });
+  });
+
+  return {
+    scenario,
+    options,
+  };
+}
+
+function tryAwardXp(points, source) {
+  if (!window.DevHandbookRPG || !Number.isFinite(points) || points <= 0) return false;
+  try {
+    window.DevHandbookRPG.awardXp(points, { source, stageColor: window._activeStageColor });
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+function renderDecisionBlock(raw) {
+  const data = parseDecisionBlock(raw);
+  const block = document.createElement('section');
+  block.className = 'decision-block';
+
+  const scenario = document.createElement('div');
+  scenario.className = 'decision-scenario';
+  scenario.innerHTML = `<strong>情景决策</strong><p>${formatInline(data.scenario || '请选择一个方案。')}</p>`;
+  block.appendChild(scenario);
+
+  const options = document.createElement('div');
+  options.className = 'decision-options';
+  block.appendChild(options);
+
+  const feedback = document.createElement('div');
+  feedback.className = 'decision-feedback';
+  feedback.setAttribute('aria-live', 'polite');
+  block.appendChild(feedback);
+
+  if (!data.options.length) {
+    feedback.innerHTML = '<p class="decision-result-text">决策题配置不完整。</p>';
+    return block;
+  }
+
+  const bestXp = Math.max(...data.options.map((option) => option.xp));
+  let answered = false;
+
+  data.options.forEach((option) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'decision-option';
+    button.innerHTML = `
+      <span class="decision-label">${option.label}</span>
+      <span class="decision-text">${formatInline(option.text)}</span>
+    `;
+    button.addEventListener('click', () => {
+      if (answered) return;
+      answered = true;
+      hapticTap();
+      const isBest = option.xp === bestXp;
+      const xpAdded = tryAwardXp(option.xp, 'decision');
+
+      options.querySelectorAll('.decision-option').forEach((item) => {
+        item.disabled = true;
+        item.classList.remove('selected', 'best', 'non-best', 'shake');
+      });
+
+      button.classList.add('selected');
+      if (isBest) {
+        button.classList.add('best');
+        launchConfetti();
+      } else {
+        button.classList.add('non-best', 'shake');
+      }
+
+      feedback.classList.add('show');
+      feedback.innerHTML = `
+        <p class="decision-result-text">${formatInline(option.result)}</p>
+        <div class="decision-xp">+${option.xp} XP${xpAdded ? '（已计入成长值）' : ''}</div>
+      `;
+    });
+    options.appendChild(button);
+  });
+
+  return block;
+}
+
+function parseChatBlock(raw) {
+  return raw
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const match = line.match(/^([A-Z]+)\|([^:]*):\s*(.*)$/);
+      if (!match) return null;
+      return {
+        role: match[1],
+        speaker: match[2].trim(),
+        message: match[3],
+      };
+    })
+    .filter(Boolean);
+}
+
+function renderChatBlock(raw) {
+  const messages = parseChatBlock(raw);
+  const block = document.createElement('section');
+  block.className = 'chat-block';
+
+  const list = document.createElement('div');
+  list.className = 'chat-messages';
+  block.appendChild(list);
+
+  const controls = document.createElement('div');
+  controls.className = 'chat-controls';
+  controls.innerHTML = `
+    <div class="chat-typing" hidden>...</div>
+    <button type="button" class="btn secondary chat-next">点击继续</button>
+  `;
+  block.appendChild(controls);
+
+  const typing = controls.querySelector('.chat-typing');
+  const nextBtn = controls.querySelector('.chat-next');
+  let cursor = 0;
+  let busy = false;
+
+  const appendMessage = (entry) => {
+    const row = document.createElement('div');
+    row.className = `chat-row role-${entry.role.toLowerCase()}`;
+    if (entry.role === 'NARRATOR') {
+      row.innerHTML = `<p class="chat-narrator">${formatInline(entry.message)}</p>`;
+      list.appendChild(row);
+      return;
+    }
+
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble';
+    const nameHtml = entry.speaker ? `<div class="chat-name">${escapeHtml(entry.speaker)}</div>` : '';
+    const aiIcon = entry.role === 'AI' ? '<span class="chat-ai-icon">✨</span>' : '';
+    bubble.innerHTML = `
+      ${nameHtml}
+      <div class="chat-text">${aiIcon}${formatInline(entry.message)}</div>
+    `;
+    row.appendChild(bubble);
+    list.appendChild(row);
+  };
+
+  const revealNext = () => {
+    if (busy || cursor >= messages.length) return;
+    busy = true;
+    nextBtn.disabled = true;
+    typing.hidden = false;
+    window.setTimeout(() => {
+      typing.hidden = true;
+      appendMessage(messages[cursor]);
+      cursor += 1;
+      busy = false;
+      if (cursor >= messages.length) {
+        nextBtn.disabled = true;
+        nextBtn.textContent = '对话完成';
+      } else {
+        nextBtn.disabled = false;
+      }
+    }, 300);
+  };
+
+  nextBtn.addEventListener('click', revealNext);
+  if (!messages.length) {
+    nextBtn.disabled = true;
+    nextBtn.textContent = '暂无对话';
+  }
+
+  return block;
+}
+
 function renderMarkdown(text) {
   const fragment = document.createDocumentFragment();
   const normalized = text.replace(/\r\n/g, '\n');
-  const codeRegex = /```([\s\S]*?)```/g;
-  const directiveRegex = /\[(diagram|interactive):([a-z0-9-]+)\]([\s\S]*?)\[\/\1\]/gi;
+  const blockRegex = /```[\s\S]*?```|\[decision\][\s\S]*?\[\/decision\]|\[chat\][\s\S]*?\[\/chat\]|\[(diagram|interactive):([a-z0-9-]+)\][\s\S]*?\[\/\1\]/gi;
   let lastIndex = 0;
   let match;
   const parts = [];
   let hasMajorSection = false;
 
-  while ((match = codeRegex.exec(normalized)) !== null) {
+  while ((match = blockRegex.exec(normalized)) !== null) {
     if (match.index > lastIndex) {
       parts.push({ type: 'text', value: normalized.slice(lastIndex, match.index) });
     }
-    parts.push({ type: 'code', value: match[1] });
+    const token = match[0];
+    if (token.startsWith('```')) {
+      parts.push({ type: 'code', value: token.slice(3, -3) });
+    } else if (token.startsWith('[decision]')) {
+      parts.push({ type: 'decision', value: token.slice(10, -11).trim() });
+    } else if (token.startsWith('[chat]')) {
+      parts.push({ type: 'chat', value: token.slice(6, -7).trim() });
+    } else if (/^\[(diagram|interactive):/.test(token)) {
+      const directiveMatch = token.match(/^\[(diagram|interactive):([a-z0-9-]+)\]([\s\S]*?)\[\/\1\]$/i);
+      if (directiveMatch) {
+        parts.push({
+          type: directiveMatch[1].toLowerCase(),
+          componentType: directiveMatch[2].toLowerCase(),
+          value: directiveMatch[3].trim(),
+        });
+      }
+    }
     lastIndex = match.index + match[0].length;
   }
   if (lastIndex < normalized.length) {
     parts.push({ type: 'text', value: normalized.slice(lastIndex) });
   }
 
-  const expandedParts = [];
   parts.forEach((part) => {
-    if (part.type !== 'text') {
-      expandedParts.push(part);
-      return;
-    }
-
-    let textLastIndex = 0;
-    directiveRegex.lastIndex = 0;
-    let directiveMatch;
-    while ((directiveMatch = directiveRegex.exec(part.value)) !== null) {
-      if (directiveMatch.index > textLastIndex) {
-        expandedParts.push({ type: 'text', value: part.value.slice(textLastIndex, directiveMatch.index) });
-      }
-      expandedParts.push({
-        type: directiveMatch[1].trim().toLowerCase(),
-        componentType: directiveMatch[2].trim().toLowerCase(),
-        value: directiveMatch[3].trim(),
-      });
-      textLastIndex = directiveMatch.index + directiveMatch[0].length;
-    }
-    if (textLastIndex < part.value.length) {
-      expandedParts.push({ type: 'text', value: part.value.slice(textLastIndex) });
-    }
-  });
-
-  expandedParts.forEach((part) => {
     if (part.type === 'code') {
       const pre = document.createElement('pre');
       const code = document.createElement('code');
@@ -126,17 +332,20 @@ function renderMarkdown(text) {
       appendContentBlock(fragment, pre);
       return;
     }
-
+    if (part.type === 'decision') {
+      appendContentBlock(fragment, renderDecisionBlock(part.value));
+      return;
+    }
+    if (part.type === 'chat') {
+      appendContentBlock(fragment, renderChatBlock(part.value));
+      return;
+    }
     if (part.type === 'diagram') {
       const renderer = window.DevHandbookDiagrams && typeof window.DevHandbookDiagrams.render === 'function'
-        ? window.DevHandbookDiagrams.render
-        : null;
+        ? window.DevHandbookDiagrams.render : null;
       if (renderer) {
-        const diagramEl = renderer(part.componentType, part.value);
-        if (diagramEl) {
-          appendContentBlock(fragment, diagramEl);
-          return;
-        }
+        const el = renderer(part.componentType, part.value);
+        if (el) { appendContentBlock(fragment, el); return; }
       }
       const fallback = document.createElement('pre');
       const code = document.createElement('code');
@@ -146,17 +355,12 @@ function renderMarkdown(text) {
       appendContentBlock(fragment, fallback);
       return;
     }
-
     if (part.type === 'interactive') {
       const renderer = window.DevHandbookInteractive && typeof window.DevHandbookInteractive.render === 'function'
-        ? window.DevHandbookInteractive.render
-        : null;
+        ? window.DevHandbookInteractive.render : null;
       if (renderer) {
-        const interactiveEl = renderer(part.componentType, part.value);
-        if (interactiveEl) {
-          appendContentBlock(fragment, interactiveEl);
-          return;
-        }
+        const el = renderer(part.componentType, part.value);
+        if (el) { appendContentBlock(fragment, el); return; }
       }
       const fallback = document.createElement('pre');
       const code = document.createElement('code');
@@ -329,12 +533,6 @@ function getYouTubeVideoId(rawUrl) {
   return null;
 }
 
-function getBilibiliVideoId(rawUrl) {
-  if (!rawUrl) return null;
-  const match = String(rawUrl).match(/(?:\/video\/|bvid=)(BV[0-9A-Za-z]+)/i);
-  return match ? match[1].toUpperCase() : null;
-}
-
 function renderVideos(stage) {
   const root = document.getElementById('stage-videos');
   if (!root) return;
@@ -348,7 +546,7 @@ function renderVideos(stage) {
   root.style.display = '';
   root.innerHTML = `
     <div class="section-title">推荐视频</div>
-    <div class="muted">中国大陆优先显示可直连资源，YouTube 提供外链预览卡</div>
+    <div class="muted">可直接观看或跳转外部资源</div>
     <div class="video-grid" style="margin-top:12px;"></div>
   `;
 
@@ -356,50 +554,32 @@ function renderVideos(stage) {
   videos.forEach((video) => {
     const card = document.createElement('article');
     card.className = 'video-card';
-    const youtubeId = getYouTubeVideoId(video.url);
-    const bvid = getBilibiliVideoId(video.url);
+    const videoId = getYouTubeVideoId(video.url);
     const title = escapeHtml(video.title || '视频资源');
     const reason = escapeHtml(video.reason || '');
-    const safeDuration = escapeHtml(video.duration || '');
-    const safePlatform = escapeHtml(video.platform || '');
+    const meta = [video.platform, video.duration].filter(Boolean).join(' · ');
+    const safeMeta = escapeHtml(meta);
     const safeUrl = escapeHtml(video.url || '#');
 
-    if (youtubeId) {
-      const thumbnailUrl = `https://i.ytimg.com/vi/${encodeURIComponent(youtubeId)}/hqdefault.jpg`;
-      card.classList.add('video-card-preview');
-      card.innerHTML = `
-        <a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="video-preview-card">
-          <div class="video-thumbnail" style="background-image: url('${thumbnailUrl}')">
-            <div class="play-overlay">▶</div>
-            <span class="platform-badge youtube">YouTube</span>
-            <span class="platform-badge blocked">⚠️ 需翻墙</span>
-          </div>
-          <div class="video-info">
-            <strong>${title}</strong>
-            <span class="muted">需翻墙观看${safeDuration ? ` · ${safeDuration}` : ''}</span>
-            ${reason ? `<p class="muted">${reason}</p>` : ''}
-          </div>
-        </a>
-      `;
-    } else if (bvid) {
+    if (videoId) {
       card.innerHTML = `
         <div class="video-embed">
           <iframe
-            src="//player.bilibili.com/player.html?bvid=${encodeURIComponent(bvid)}&page=1"
+            src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}"
             title="${title}"
             loading="lazy"
             referrerpolicy="strict-origin-when-cross-origin"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowfullscreen
           ></iframe>
         </div>
         <div class="video-info">
           <strong>${title}</strong>
-          <span class="muted">Bilibili${safeDuration ? ` · ${safeDuration}` : ''}</span>
+          ${safeMeta ? `<span class="muted">${safeMeta}</span>` : ''}
           ${reason ? `<p class="muted">${reason}</p>` : ''}
         </div>
       `;
     } else {
-      const safeMeta = [safePlatform, safeDuration].filter(Boolean).join(' · ');
       card.innerHTML = `
         <a class="video-link-card" href="${safeUrl}" target="_blank" rel="noopener noreferrer">
           <strong>${title}</strong>
@@ -427,6 +607,36 @@ function setupRenderedTables() {
   if (window.DevHandbook && typeof window.DevHandbook.setupTableOverflowHints === 'function') {
     window.DevHandbook.setupTableOverflowHints(document.getElementById('stage-content'));
   }
+}
+
+function setupScrollReveal() {
+  if (document.body?.dataset?.page !== 'stage') return;
+
+  const targets = Array.from(
+    document.querySelectorAll('.content-block, .section-card, .card, .diagram-container')
+  );
+  if (!targets.length) return;
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    targets.forEach((el) => el.classList.add('revealed'));
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries, activeObserver) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('revealed');
+        activeObserver.unobserve(entry.target);
+      });
+    },
+    { threshold: 0.1 }
+  );
+
+  targets.forEach((el, index) => {
+    el.style.setProperty('--reveal-delay', `${index * 50}ms`);
+    observer.observe(el);
+  });
 }
 
 function tagClass(tag) {
@@ -459,6 +669,8 @@ async function loadStage() {
     }
   } catch (err) {
     renderStageUnavailable(contentRoot, loading, stageId);
+  } finally {
+    setupScrollReveal();
   }
 }
 
@@ -497,9 +709,13 @@ function renderStageUnavailable(root, loading, stageId) {
 }
 
 function renderStage(stage) {
+  window._activeStageColor = stage.color || '#448AFF';
   const state = window.DevHandbook.loadState();
   const progress = window.DevHandbook.ensureStageProgress(state, stage.id, stage.checklist.length);
   window.DevHandbook.saveState(state);
+  if (window.DevHandbookRPG) {
+    window.DevHandbookRPG.init({ stageColor: window._activeStageColor });
+  }
 
   const totalSections = stage.sections.length;
   const completedSections = progress.sectionsRead.length;
@@ -576,11 +792,10 @@ function renderSections(stage, progress) {
   const container = document.getElementById('sections-container');
   container.innerHTML = '';
 
-  stage.sections.forEach((section, index) => {
+  stage.sections.forEach((section) => {
     const card = document.createElement('section');
-    card.className = 'card section-card fade-in-up';
+    card.className = 'card section-card';
     card.id = `section-${section.id}`;
-    card.style.animationDelay = `${index * 80}ms`;
 
     const meta = document.createElement('div');
     meta.className = 'section-meta';
@@ -609,9 +824,13 @@ function renderSections(stage, progress) {
       const stageProgress = window.DevHandbook.ensureStageProgress(state, stage.id, stage.checklist.length);
       if (!stageProgress.sectionsRead.includes(section.id)) {
         stageProgress.sectionsRead.push(section.id);
+        if (window.DevHandbookRPG) {
+          window.DevHandbookRPG.awardXp(15, { source: 'section-read', stageColor: window._activeStageColor });
+        }
       }
       state.lastVisited = { stage: stage.id, section: section.id };
       window.DevHandbook.saveState(state);
+      hapticTap();
       readBtn.textContent = '已读';
       readBtn.disabled = true;
       updateReadIndicators(section.id, true);
@@ -698,8 +917,10 @@ function renderExercises(stage, progress) {
   root.innerHTML = '';
 
   stage.exercises.forEach((exercise, index) => {
+    const exerciseKey = `exercise-${index}`;
+    const isDone = progress.exercisesDone.includes(exerciseKey);
     const panel = document.createElement('div');
-    panel.className = 'exercise-panel';
+    panel.className = `exercise-panel ${isDone ? 'completed' : ''}`;
 
     const header = document.createElement('header');
     const stars = '⭐'.repeat(exercise.level);
@@ -708,11 +929,26 @@ function renderExercises(stage, progress) {
 
     const body = document.createElement('div');
     body.className = 'panel-body';
-    body.innerHTML = `<p>${formatInline(exercise.question).replace(/\n/g, '<br>')}</p>`;
+    body.innerHTML = `<p>${formatInlineWithGlossary(exercise.question).replace(/\n/g, '<br>')}</p>`;
+    const decisionOptions = Array.isArray(exercise.options) ? exercise.options : [];
+    const canRenderDecision = (exercise.type === 'open' || exercise.type === 'quiz') && decisionOptions.length;
+    if (canRenderDecision) {
+      const raw = [
+        `scenario: ${exercise.scenario || exercise.question || ''}`,
+        ...decisionOptions.map((option, optionIndex) => {
+          const label = option.label || String.fromCharCode(65 + optionIndex);
+          const text = option.text || option.title || '';
+          const result = option.result || option.consequence || '';
+          const xp = Number.isFinite(option.xp) ? option.xp : 0;
+          return `${label}: ${text}|result:${result}|xp:${xp}`;
+        }),
+      ].join('\n');
+      body.appendChild(renderDecisionBlock(raw));
+    }
     if (exercise.referenceAnswer) {
       const ref = document.createElement('div');
       ref.className = 'callout';
-      ref.innerHTML = `<strong>参考答案：</strong><br>${formatInline(exercise.referenceAnswer).replace(/\n/g, '<br>')}`;
+      ref.innerHTML = `<strong>参考答案：</strong><br>${formatInlineWithGlossary(exercise.referenceAnswer).replace(/\n/g, '<br>')}`;
       body.appendChild(ref);
     }
     if (exercise.templateRef) {
@@ -721,6 +957,27 @@ function renderExercises(stage, progress) {
       note.textContent = `使用模板：${exercise.templateRef}`;
       body.appendChild(note);
     }
+
+    const doneBtn = document.createElement('button');
+    doneBtn.type = 'button';
+    doneBtn.className = 'btn secondary exercise-complete-btn';
+    doneBtn.textContent = isDone ? '练习已完成' : '标记练习已完成';
+    doneBtn.disabled = isDone;
+    doneBtn.addEventListener('click', () => {
+      const state = window.DevHandbook.loadState();
+      const stageProgress = window.DevHandbook.ensureStageProgress(state, stage.id, stage.checklist.length);
+      if (stageProgress.exercisesDone.includes(exerciseKey)) return;
+      stageProgress.exercisesDone.push(exerciseKey);
+      window.DevHandbook.saveState(state);
+      if (window.DevHandbookRPG) {
+        window.DevHandbookRPG.awardXp(30, { source: 'exercise-complete', stageColor: window._activeStageColor });
+      }
+      hapticTap();
+      panel.classList.add('completed');
+      doneBtn.textContent = '练习已完成';
+      doneBtn.disabled = true;
+    });
+    body.appendChild(doneBtn);
     panel.appendChild(body);
 
     header.addEventListener('click', () => {
@@ -748,8 +1005,13 @@ function renderChecklist(stage, progress) {
     input.addEventListener('change', () => {
       const state = window.DevHandbook.loadState();
       const progress = window.DevHandbook.ensureStageProgress(state, stage.id, stage.checklist.length);
+      const wasChecked = Boolean(progress.checklist[index]);
       progress.checklist[index] = input.checked;
       window.DevHandbook.saveState(state);
+      if (!wasChecked && input.checked && window.DevHandbookRPG) {
+        window.DevHandbookRPG.awardXp(10, { source: 'checklist-item', stageColor: window._activeStageColor });
+      }
+      hapticTap();
       row.classList.toggle('completed', input.checked);
       updateStageCompletion(stage, state);
       renderCongrats(stage.id, progress);
@@ -828,7 +1090,14 @@ function updateStageCompletion(stage, state) {
   const progress = state.progress[`stage-${stage.id}`];
   const allRead = progress.sectionsRead.length === stage.sections.length;
   const checklistDone = progress.checklist.length ? progress.checklist.every(Boolean) : true;
+  const wasCompleted = Boolean(progress.completed);
   progress.completed = allRead && checklistDone;
+  if (progress.completed && !wasCompleted && !progress.stageBonusAwarded) {
+    progress.stageBonusAwarded = true;
+    if (window.DevHandbookRPG) {
+      window.DevHandbookRPG.awardXp(50, { source: 'stage-complete', stageColor: window._activeStageColor });
+    }
+  }
   window.DevHandbook.saveState(state);
 }
 
@@ -838,8 +1107,8 @@ function renderStageLink(stage) {
 }
 
 async function renderBottomNav(stageId) {
-  const nav = document.getElementById('bottom-stage-nav');
-  if (!nav) return;
+  const desktopNav = document.getElementById('bottom-stage-nav');
+  const mobileNav = document.querySelector('.bottom-nav.stage-nav');
   try {
     const response = await fetch('data/roles.json');
     const data = await response.json();
@@ -848,17 +1117,35 @@ async function renderBottomNav(stageId) {
     const prev = ids[index - 1];
     const next = ids[index + 1];
 
-    nav.innerHTML = `
+    const stageNavHtml = `
       <a class="btn secondary" href="stage.html?id=${prev || stageId}">${prev ? `上一关 ${prev}` : '回到开头'}</a>
       <a class="btn primary" href="index.html">首页</a>
       <a class="btn secondary" href="stage.html?id=${next || stageId}">${next ? `下一关 ${next}` : '继续探索'}</a>
     `;
+    if (desktopNav) {
+      desktopNav.innerHTML = stageNavHtml;
+    }
+    if (mobileNav) {
+      mobileNav.innerHTML = `
+        <a href="stage.html?id=${prev || stageId}" class="stage-nav-btn">${prev ? `⬅️ 上一关 ${prev}` : '⬅️ 回到开头'}</a>
+        <a href="index.html" class="stage-nav-btn stage-nav-home">🏠 首页</a>
+        <a href="stage.html?id=${next || stageId}" class="stage-nav-btn">${next ? `下一关 ${next} ➡️` : '继续探索 ➡️'}</a>
+      `;
+    }
   } catch (err) {
-    nav.innerHTML = '<a class="btn primary" href="index.html">返回首页</a>';
+    if (desktopNav) {
+      desktopNav.innerHTML = '<a class="btn primary" href="index.html">返回首页</a>';
+    }
+    if (mobileNav) {
+      mobileNav.innerHTML = '<a href="index.html" class="stage-nav-btn stage-nav-home">🏠 返回首页</a>';
+    }
   }
 }
 
 window.addEventListener('DOMContentLoaded', () => {
   window.DevHandbook.initBottomNav();
+  if (window.DevHandbookGlossary) {
+    window.DevHandbookGlossary.init();
+  }
   loadStage();
 });
