@@ -541,18 +541,12 @@
   animation: fadeInUp 520ms ease both;
 }
 
-body[data-page="stage"] .content-block,
-body[data-page="stage"] .section-card,
-body[data-page="stage"] .card,
-body[data-page="stage"] .diagram-container {
+body[data-page="stage"] .scroll-reveal {
   opacity: 0;
   transform: translateY(24px);
 }
 
-body[data-page="stage"] .content-block.revealed,
-body[data-page="stage"] .section-card.revealed,
-body[data-page="stage"] .card.revealed,
-body[data-page="stage"] .diagram-container.revealed {
+body[data-page="stage"] .scroll-reveal.revealed {
   opacity: 1;
   transform: translateY(0);
   transition: opacity 0.5s ease, transform 0.5s ease;

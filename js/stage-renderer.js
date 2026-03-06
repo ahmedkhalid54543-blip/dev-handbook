@@ -634,6 +634,7 @@ function setupScrollReveal() {
   );
 
   targets.forEach((el, index) => {
+    el.classList.add('scroll-reveal');
     el.style.setProperty('--reveal-delay', `${index * 50}ms`);
     observer.observe(el);
   });
