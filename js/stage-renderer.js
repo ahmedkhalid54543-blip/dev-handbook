@@ -121,6 +121,24 @@ function parseDecisionBlock(raw) {
   };
 }
 
+function recordWrongAnswer(type, question, userAnswer, correctInfo) {
+  try {
+    const key = 'devHandbook_wrongAnswers';
+    const raw = localStorage.getItem(key);
+    const list = raw ? JSON.parse(raw) : [];
+    list.push({
+      type,
+      question: String(question).slice(0, 200),
+      userAnswer: String(userAnswer).slice(0, 200),
+      correctInfo: String(correctInfo).slice(0, 200),
+      stageId: getQueryParam('id') || '',
+      ts: Date.now(),
+    });
+    if (list.length > 200) list.splice(0, list.length - 200);
+    localStorage.setItem(key, JSON.stringify(list));
+  } catch (err) { /* storage full */ }
+}
+
 function tryAwardXp(points, source) {
   if (!window.DevHandbookRPG || !Number.isFinite(points) || points <= 0) return false;
   try {
@@ -184,6 +202,7 @@ function renderDecisionBlock(raw) {
         launchConfetti();
       } else {
         button.classList.add('non-best', 'shake');
+        recordWrongAnswer('decision', data.scenario, option.text, option.result);
       }
 
       feedback.classList.add('show');

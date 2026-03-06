@@ -128,11 +128,69 @@ function setupContinueButton() {
   }
 }
 
+function renderReviewSection() {
+  const container = document.getElementById('review-section');
+  if (!container) return;
+
+  try {
+    const raw = localStorage.getItem('devHandbook_wrongAnswers');
+    if (!raw) {
+      container.style.display = 'none';
+      return;
+    }
+    const allWrong = JSON.parse(raw);
+    if (!allWrong.length) {
+      container.style.display = 'none';
+      return;
+    }
+
+    container.style.display = '';
+
+    const shuffled = [...allWrong].sort(() => Math.random() - 0.5);
+    const picked = shuffled.slice(0, 5);
+    const list = container.querySelector('.review-list');
+    list.innerHTML = '';
+
+    picked.forEach((item) => {
+      const card = document.createElement('div');
+      card.className = 'review-card card';
+      const typeLabel = item.type === 'quiz' ? '测验' : '情景决策';
+      const stageLabel = item.stageId ? `Stage ${item.stageId}` : '';
+      card.innerHTML = `
+        <div class="review-type">${typeLabel} ${stageLabel}</div>
+        <div class="review-question">${escapeHtmlSimple(item.question)}</div>
+        <div class="review-answer">你的回答：${escapeHtmlSimple(item.userAnswer)}</div>
+        <div class="review-correct">正确/建议：${escapeHtmlSimple(item.correctInfo)}</div>
+      `;
+      list.appendChild(card);
+    });
+
+    const clearBtn = container.querySelector('.review-clear');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        localStorage.removeItem('devHandbook_wrongAnswers');
+        container.style.display = 'none';
+      });
+    }
+  } catch (err) {
+    container.style.display = 'none';
+  }
+}
+
+function escapeHtmlSimple(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 async function initHome() {
   window.DevHandbook.initBottomNav();
   window.DevHandbook.setupExportImport();
 
   setupContinueButton();
+  renderReviewSection();
   window.DevHandbook.renderDiagnosis('diagnosis');
 
   const rolesData = await loadRoles();

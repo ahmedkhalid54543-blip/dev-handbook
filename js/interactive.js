@@ -221,6 +221,22 @@
           const target = choices.querySelector(`.quiz-option[data-key="${answer}"]`);
           if (target) target.classList.add('correct');
           showFeedback(body, false, '答案不对，再看下关键概念。');
+          try {
+            const correctOpt = options.find((o) => o.key === answer);
+            const key = 'devHandbook_wrongAnswers';
+            const raw = localStorage.getItem(key);
+            const list = raw ? JSON.parse(raw) : [];
+            list.push({
+              type: 'quiz',
+              question: question.slice(0, 200),
+              userAnswer: option.text.slice(0, 200),
+              correctInfo: correctOpt ? correctOpt.text.slice(0, 200) : '',
+              stageId: new URLSearchParams(window.location.search).get('id') || '',
+              ts: Date.now(),
+            });
+            if (list.length > 200) list.splice(0, list.length - 200);
+            localStorage.setItem(key, JSON.stringify(list));
+          } catch (err) { /* ignore */ }
         }
 
         if (explain) {
@@ -507,12 +523,102 @@
     return root;
   }
 
+  function renderPromptDebugger(raw) {
+    const map = parseKeyValueLines(raw);
+    const title = (map.title && map.title[0]) || 'Prompt Debugger';
+    const badPrompt = (map.bad && map.bad[0]) || '';
+    const fixedPrompt = (map.fixed && map.fixed[0]) || '';
+    const fixes = (map.fix || []).map((line) => {
+      const idx = line.indexOf(':');
+      if (idx <= 0) return { label: line, desc: '' };
+      return { label: line.slice(0, idx).trim(), desc: line.slice(idx + 1).trim() };
+    });
+
+    const { root, body } = buildInteractiveShell('prompt-debugger', title);
+    root.dataset.interactiveType = 'prompt-debugger';
+
+    const badSection = document.createElement('div');
+    badSection.className = 'pd-bad-prompt';
+    badSection.innerHTML = `<div class="pd-label pd-label-bad">坏 Prompt</div><pre class="pd-prompt-text">${escapeHtml(badPrompt)}</pre>`;
+    body.appendChild(badSection);
+
+    const fixGrid = document.createElement('div');
+    fixGrid.className = 'pd-fix-grid';
+    const selectedFixes = new Set();
+
+    fixes.forEach((fix, i) => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'pd-fix-card';
+      card.innerHTML = `<strong>${escapeHtml(fix.label)}</strong><span class="muted">${escapeHtml(fix.desc)}</span>`;
+      card.addEventListener('click', () => {
+        card.classList.toggle('selected');
+        if (selectedFixes.has(i)) {
+          selectedFixes.delete(i);
+        } else {
+          selectedFixes.add(i);
+        }
+      });
+      fixGrid.appendChild(card);
+    });
+
+    const fixLabel = document.createElement('div');
+    fixLabel.className = 'pd-label';
+    fixLabel.textContent = '选择修复策略（可多选）';
+    body.appendChild(fixLabel);
+    body.appendChild(fixGrid);
+
+    const actions = document.createElement('div');
+    actions.className = 'interactive-actions';
+    const applyBtn = document.createElement('button');
+    applyBtn.type = 'button';
+    applyBtn.className = 'btn primary';
+    applyBtn.textContent = '应用修复，查看对比';
+    actions.appendChild(applyBtn);
+    body.appendChild(actions);
+
+    const diffSection = document.createElement('div');
+    diffSection.className = 'pd-diff';
+    diffSection.hidden = true;
+    body.appendChild(diffSection);
+
+    applyBtn.addEventListener('click', () => {
+      if (selectedFixes.size === 0) {
+        showFeedback(body, false, '至少选一个修复策略再试。');
+        return;
+      }
+      diffSection.hidden = false;
+      diffSection.innerHTML = `
+        <div class="pd-diff-col pd-diff-before">
+          <div class="pd-label pd-label-bad">修复前</div>
+          <pre class="pd-prompt-text">${escapeHtml(badPrompt)}</pre>
+        </div>
+        <div class="pd-diff-arrow">→</div>
+        <div class="pd-diff-col pd-diff-after">
+          <div class="pd-label pd-label-good">修复后</div>
+          <pre class="pd-prompt-text">${escapeHtml(fixedPrompt)}</pre>
+        </div>
+      `;
+      const allSelected = selectedFixes.size === fixes.length;
+      if (allSelected) {
+        root.classList.add('solved');
+        launchMiniConfetti(root);
+        showFeedback(body, true, '全部修复策略都选中了，这才是完整的好 Prompt。');
+      } else {
+        showFeedback(body, true, `你选了 ${selectedFixes.size}/${fixes.length} 个修复点。试试全选，看看完整版 Prompt 有多大差别。`);
+      }
+    });
+
+    return root;
+  }
+
   function render(type, payload) {
     const normalizedType = String(type || '').trim().toLowerCase();
     if (normalizedType === 'drag-sort') return renderDragSort(payload);
     if (normalizedType === 'quiz') return renderQuiz(payload);
     if (normalizedType === 'fill-blank') return renderFillBlank(payload);
     if (normalizedType === 'flip-card') return renderFlipCard(payload);
+    if (normalizedType === 'prompt-debugger') return renderPromptDebugger(payload);
     return null;
   }
 

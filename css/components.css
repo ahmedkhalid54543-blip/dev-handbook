@@ -1382,3 +1382,143 @@ body[data-page="stage"] .diagram-container.revealed svg path {
   transform: translateY(0);
 }
 
+/* Prompt Debugger */
+.interactive-prompt-debugger .pd-bad-prompt {
+  margin-bottom: 16px;
+}
+.pd-label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #64748B;
+}
+.pd-label-bad {
+  color: #EF4444;
+}
+.pd-label-good {
+  color: #22C55E;
+}
+.pd-prompt-text {
+  background: #1E293B;
+  color: #E2E8F0;
+  padding: 14px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+}
+.pd-fix-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.pd-fix-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border: 2px solid #E2E8F0;
+  border-radius: 10px;
+  background: #FFF;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+.pd-fix-card:hover {
+  border-color: #94A3B8;
+}
+.pd-fix-card.selected {
+  border-color: #7C4DFF;
+  background: #F3F0FF;
+  transform: scale(1.03);
+}
+.pd-fix-card strong {
+  font-size: 13px;
+}
+.pd-fix-card .muted {
+  font-size: 12px;
+}
+.pd-diff {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  align-items: flex-start;
+}
+.pd-diff-col {
+  flex: 1;
+  min-width: 0;
+}
+.pd-diff-arrow {
+  display: flex;
+  align-items: center;
+  font-size: 24px;
+  color: #94A3B8;
+  padding-top: 28px;
+}
+.pd-diff-before .pd-prompt-text {
+  border-left: 3px solid #EF4444;
+}
+.pd-diff-after .pd-prompt-text {
+  border-left: 3px solid #22C55E;
+}
+@media (max-width: 600px) {
+  .pd-diff {
+    flex-direction: column;
+  }
+  .pd-diff-arrow {
+    transform: rotate(90deg);
+    padding-top: 0;
+    justify-content: center;
+  }
+  .pd-fix-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Review section on homepage */
+.review-section {
+  margin-top: 20px;
+}
+.review-section .section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.review-card {
+  padding: 16px;
+  border-radius: 12px;
+  background: #FFF;
+  border: 1px solid #E6EBF5;
+  margin-bottom: 10px;
+}
+.review-card .review-type {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #7C4DFF;
+  margin-bottom: 4px;
+}
+.review-card .review-question {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+.review-card .review-answer {
+  font-size: 13px;
+  color: #64748B;
+}
+.review-card .review-correct {
+  font-size: 13px;
+  color: #22C55E;
+  margin-top: 4px;
+}
+.review-empty {
+  text-align: center;
+  padding: 24px;
+  color: #94A3B8;
+  font-size: 14px;
+}
+
