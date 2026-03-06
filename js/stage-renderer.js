@@ -677,6 +677,26 @@ async function loadStage() {
   } catch (err) {
     renderStageUnavailable(contentRoot, loading, stageId);
   } finally {
+    // Override any cached CSS that hides elements with opacity:0
+    const fixStyle = document.createElement('style');
+    fixStyle.textContent = `
+      body[data-page="stage"] .content-block,
+      body[data-page="stage"] .section-card,
+      body[data-page="stage"] .card,
+      body[data-page="stage"] .diagram-container {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+      body[data-page="stage"] .scroll-reveal {
+        opacity: 0 !important;
+        transform: translateY(24px) !important;
+      }
+      body[data-page="stage"] .scroll-reveal.revealed {
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+      }
+    `;
+    document.head.appendChild(fixStyle);
     setupScrollReveal();
   }
 }
