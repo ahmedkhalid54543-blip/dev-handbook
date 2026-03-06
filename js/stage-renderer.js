@@ -4,7 +4,7 @@ function getQueryParam(name) {
 }
 
 function escapeHtml(value) {
-  return value
+  return String(value ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -62,6 +62,13 @@ function parseTable(block) {
   return table;
 }
 
+function appendContentBlock(fragment, element) {
+  if (element.classList) {
+    element.classList.add('content-block');
+  }
+  fragment.appendChild(element);
+}
+
 function renderMarkdown(text) {
   const fragment = document.createDocumentFragment();
   const normalized = text.replace(/\r\n/g, '\n');
@@ -69,6 +76,7 @@ function renderMarkdown(text) {
   let lastIndex = 0;
   let match;
   const parts = [];
+  let hasMajorSection = false;
 
   while ((match = codeRegex.exec(normalized)) !== null) {
     if (match.index > lastIndex) {
@@ -88,32 +96,246 @@ function renderMarkdown(text) {
       code.className = 'code-block language-plain';
       code.textContent = part.value.trim();
       pre.appendChild(code);
-      fragment.appendChild(pre);
+      appendContentBlock(fragment, pre);
       return;
     }
 
-    const blocks = part.value.split(/\n\n+/).filter((block) => block.trim().length);
+    const blocks = part.value
+      .split(/\n\n+/)
+      .map((block) => block.trim())
+      .filter((block) => block.length);
+
     blocks.forEach((block) => {
       const table = parseTable(block);
       if (table) {
-        fragment.appendChild(table);
+        appendContentBlock(fragment, table);
         return;
       }
-      const paragraph = document.createElement('p');
-      paragraph.innerHTML = formatInline(block.replace(/\n/g, '<br>'));
-      const textValue = block.trim();
-      if (textValue.startsWith('Mi English') || textValue.includes('Mi English 的例子') || textValue.includes('Mi English 案例')) {
-        const callout = document.createElement('div');
-        callout.className = 'callout mi';
-        callout.appendChild(paragraph);
-        fragment.appendChild(callout);
-      } else {
-        fragment.appendChild(paragraph);
-      }
+
+      const lines = block.split('\n');
+      let paragraphLines = [];
+      let listType = null;
+      let listEl = null;
+      let quoteLines = [];
+
+      const flushQuote = () => {
+        if (!quoteLines.length) return;
+        const quote = document.createElement('blockquote');
+        quote.className = 'markdown-quote';
+        quote.innerHTML = formatInline(quoteLines.join('<br>'));
+        appendContentBlock(fragment, quote);
+        quoteLines = [];
+      };
+
+      const flushList = () => {
+        if (!listEl) return;
+        appendContentBlock(fragment, listEl);
+        listEl = null;
+        listType = null;
+      };
+
+      const flushParagraph = () => {
+        if (!paragraphLines.length) return;
+        const textValue = paragraphLines.join('\n').trim();
+        const paragraph = document.createElement('p');
+        paragraph.innerHTML = formatInline(paragraphLines.join('<br>'));
+        if (textValue.startsWith('Mi English') || textValue.includes('Mi English 的例子') || textValue.includes('Mi English 案例')) {
+          const callout = document.createElement('div');
+          callout.className = 'callout mi';
+          callout.appendChild(paragraph);
+          appendContentBlock(fragment, callout);
+        } else {
+          appendContentBlock(fragment, paragraph);
+        }
+        paragraphLines = [];
+      };
+
+      const flushAll = () => {
+        flushQuote();
+        flushList();
+        flushParagraph();
+      };
+
+      lines.forEach((line) => {
+        const heading4 = line.match(/^\s*####\s+(.+)$/);
+        if (heading4) {
+          flushAll();
+          const h4 = document.createElement('h4');
+          h4.innerHTML = formatInline(heading4[1]);
+          appendContentBlock(fragment, h4);
+          return;
+        }
+
+        const heading3 = line.match(/^\s*###?\s+(.+)$/);
+        if (heading3) {
+          flushAll();
+          if (hasMajorSection) {
+            const hr = document.createElement('hr');
+            hr.className = 'section-break';
+            appendContentBlock(fragment, hr);
+          }
+          const h3 = document.createElement('h3');
+          h3.innerHTML = formatInline(heading3[1]);
+          appendContentBlock(fragment, h3);
+          hasMajorSection = true;
+          return;
+        }
+
+        const quote = line.match(/^\s*>\s?(.*)$/);
+        if (quote) {
+          flushParagraph();
+          flushList();
+          quoteLines.push(quote[1]);
+          return;
+        }
+
+        const ulItem = line.match(/^\s*[-*]\s+(.+)$/);
+        if (ulItem) {
+          flushParagraph();
+          flushQuote();
+          if (listType !== 'ul') {
+            flushList();
+            listType = 'ul';
+            listEl = document.createElement('ul');
+          }
+          const li = document.createElement('li');
+          li.innerHTML = formatInline(ulItem[1]);
+          listEl.appendChild(li);
+          return;
+        }
+
+        const olItem = line.match(/^\s*\d+\.\s+(.+)$/);
+        if (olItem) {
+          flushParagraph();
+          flushQuote();
+          if (listType !== 'ol') {
+            flushList();
+            listType = 'ol';
+            listEl = document.createElement('ol');
+          }
+          const li = document.createElement('li');
+          li.innerHTML = formatInline(olItem[1]);
+          listEl.appendChild(li);
+          return;
+        }
+
+        if (!line.trim()) {
+          flushAll();
+          return;
+        }
+
+        flushQuote();
+        flushList();
+        paragraphLines.push(line);
+      });
+
+      flushAll();
     });
   });
 
   return fragment;
+}
+
+function getYouTubeVideoId(rawUrl) {
+  if (!rawUrl) return null;
+  try {
+    const url = new URL(rawUrl);
+    const host = url.hostname.replace(/^www\./, '').toLowerCase();
+    if (host === 'youtu.be') {
+      return url.pathname.split('/').filter(Boolean)[0] || null;
+    }
+    if (host === 'youtube.com' || host === 'm.youtube.com') {
+      if (url.pathname === '/watch') {
+        return url.searchParams.get('v');
+      }
+      if (url.pathname.startsWith('/shorts/')) {
+        return url.pathname.split('/')[2] || null;
+      }
+      if (url.pathname.startsWith('/embed/')) {
+        return url.pathname.split('/')[2] || null;
+      }
+    }
+  } catch (err) {
+    const fallback = rawUrl.match(/(?:v=|youtu\.be\/|shorts\/)([A-Za-z0-9_-]{6,})/);
+    return fallback ? fallback[1] : null;
+  }
+  return null;
+}
+
+function renderVideos(stage) {
+  const root = document.getElementById('stage-videos');
+  if (!root) return;
+  const videos = Array.isArray(stage.videos) ? stage.videos : [];
+  if (!videos.length) {
+    root.style.display = 'none';
+    root.innerHTML = '';
+    return;
+  }
+
+  root.style.display = '';
+  root.innerHTML = `
+    <div class="section-title">推荐视频</div>
+    <div class="muted">可直接观看或跳转外部资源</div>
+    <div class="video-grid" style="margin-top:12px;"></div>
+  `;
+
+  const grid = root.querySelector('.video-grid');
+  videos.forEach((video) => {
+    const card = document.createElement('article');
+    card.className = 'video-card';
+    const videoId = getYouTubeVideoId(video.url);
+    const title = escapeHtml(video.title || '视频资源');
+    const reason = escapeHtml(video.reason || '');
+    const meta = [video.platform, video.duration].filter(Boolean).join(' · ');
+    const safeMeta = escapeHtml(meta);
+    const safeUrl = escapeHtml(video.url || '#');
+
+    if (videoId) {
+      card.innerHTML = `
+        <div class="video-embed">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}"
+            title="${title}"
+            loading="lazy"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+        </div>
+        <div class="video-info">
+          <strong>${title}</strong>
+          ${safeMeta ? `<span class="muted">${safeMeta}</span>` : ''}
+          ${reason ? `<p class="muted">${reason}</p>` : ''}
+        </div>
+      `;
+    } else {
+      card.innerHTML = `
+        <a class="video-link-card" href="${safeUrl}" target="_blank" rel="noopener noreferrer">
+          <strong>${title}</strong>
+          ${safeMeta ? `<span class="muted">${safeMeta}</span>` : ''}
+          ${reason ? `<p class="muted">${reason}</p>` : ''}
+          <span class="video-link-arrow">打开外部视频资源 →</span>
+        </a>
+      `;
+    }
+
+    grid.appendChild(card);
+  });
+}
+
+function buildRoleChip(label, description, color, icon) {
+  return `
+    <article class="role-chip">
+      <div class="role-chip-label" style="background:${color}">${icon ? `${icon} ` : ''}${label}</div>
+      <p>${escapeHtml(description)}</p>
+    </article>
+  `;
+}
+
+function setupRenderedTables() {
+  if (window.DevHandbook && typeof window.DevHandbook.setupTableOverflowHints === 'function') {
+    window.DevHandbook.setupTableOverflowHints(document.getElementById('stage-content'));
+  }
 }
 
 function tagClass(tag) {
@@ -152,6 +374,7 @@ async function loadStage() {
 function renderStageUnavailable(root, loading, stageId) {
   const hideIds = [
     'stage-hero',
+    'stage-videos',
     'sections-container',
     'stage-toc',
     'stage-prompts',
@@ -196,23 +419,29 @@ function renderStage(stage) {
   if (topProgress) topProgress.textContent = `${completedSections}/${totalSections} 已读`;
 
   const hero = document.getElementById('stage-hero');
+  const heroImage = stage.heroImage
+    ? `<img class="stage-hero-image" src="${escapeHtml(stage.heroImage)}" alt="${escapeHtml(stage.heroImageAlt || stage.title)}" loading="lazy" decoding="async">`
+    : '';
   hero.innerHTML = `
+    ${heroImage}
     <div class="hero-number">${stage.id}</div>
     <div>
       <div class="hero-title">${stage.title}</div>
       <div class="hook">${stage.hookQuestion}</div>
     </div>
     <div><strong>本关产出：</strong>${stage.deliverable}</div>
-    <div class="role-badges">
-      <span class="badge" style="background:${stage.color}">${stage.icon} 你：${stage.roles.you}</span>
-      <span class="badge" style="background:${stage.color}">AI：${stage.roles.ai}</span>
-      <span class="badge" style="background:${stage.color}">用户：${stage.roles.user}</span>
+    <div class="role-grid">
+      ${buildRoleChip('你', stage.roles.you, stage.color, stage.icon)}
+      ${buildRoleChip('AI', stage.roles.ai, stage.color)}
+      ${buildRoleChip('用户', stage.roles.user, stage.color)}
     </div>
     <div class="muted">预计用时：${stage.estimatedMinutes} 分钟</div>
   `;
 
+  renderVideos(stage);
   renderToc(stage, progress);
   renderSections(stage, progress);
+  setupRenderedTables();
   renderPrompts(stage);
   renderFails(stage);
   renderExercises(stage, progress);

@@ -84,6 +84,45 @@ function initBottomNav() {
   });
 }
 
+function setupTableOverflowHints(root = document) {
+  const scope = root || document;
+  const wrappers = scope.querySelectorAll('.table-wrapper');
+
+  wrappers.forEach((wrapper) => {
+    const table = wrapper.querySelector('table');
+    if (!table) return;
+
+    table.setAttribute('role', 'region');
+    if (!table.getAttribute('aria-label')) {
+      table.setAttribute('aria-label', '数据表，可左右滚动');
+    }
+
+    let hint = wrapper.previousElementSibling;
+    if (!hint || !hint.classList.contains('table-scroll-hint')) {
+      hint = document.createElement('p');
+      hint.className = 'table-scroll-hint';
+      hint.textContent = '左右滑动查看完整表格 →';
+      wrapper.parentNode.insertBefore(hint, wrapper);
+    }
+
+    const updateOverflowState = () => {
+      const isOverflowing = wrapper.scrollWidth > wrapper.clientWidth + 1;
+      wrapper.classList.toggle('is-overflowing', isOverflowing);
+      hint.classList.toggle('is-visible', isOverflowing);
+    };
+
+    updateOverflowState();
+    if (!wrapper.dataset.hintBound) {
+      wrapper.addEventListener('scroll', updateOverflowState, { passive: true });
+      wrapper.dataset.hintBound = 'true';
+    }
+    if (!wrapper.dataset.hintResizeBound) {
+      window.addEventListener('resize', updateOverflowState);
+      wrapper.dataset.hintResizeBound = 'true';
+    }
+  });
+}
+
 function updateProgressRing(container, completed, total) {
   if (!container) return;
   const circle = container.querySelector('circle[data-progress]');
@@ -141,5 +180,6 @@ window.DevHandbook = {
   getTotalCompletedStages,
   updateProgressRing,
   initBottomNav,
+  setupTableOverflowHints,
   setupExportImport,
 };

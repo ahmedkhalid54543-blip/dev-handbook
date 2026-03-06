@@ -16,7 +16,7 @@ body {
   font-family: var(--font-family);
   background: var(--bg-primary);
   color: var(--text-primary);
-  line-height: 1.6;
+  line-height: 1.8;
 }
 
 img {
@@ -40,7 +40,7 @@ button {
   width: 100%;
   margin: 0 auto;
   padding: var(--spacing-page-mobile);
-  padding-bottom: 96px;
+  padding-bottom: calc(var(--bottom-nav-total) + 24px);
 }
 
 .page-header {
@@ -184,7 +184,9 @@ button {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 56px;
+  min-height: var(--bottom-nav-height);
+  height: auto;
+  padding-bottom: var(--bottom-safe-area);
   background: #fff;
   box-shadow: 0 -8px 20px rgba(15, 20, 40, 0.08);
   display: grid;
@@ -314,7 +316,7 @@ pre {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  margin: 12px 0;
+  margin: 8px 0 14px;
   position: relative;
 }
 
@@ -329,6 +331,23 @@ pre {
   background: linear-gradient(to right, transparent, rgba(0,0,0,0.04));
   pointer-events: none;
   border-radius: 0 8px 8px 0;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.table-wrapper.is-overflowing::after {
+  opacity: 1;
+}
+
+.table-scroll-hint {
+  display: none;
+  margin: 10px 0 2px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.table-scroll-hint.is-visible {
+  display: block;
 }
 
 .table-wrapper table {
@@ -363,6 +382,10 @@ pre {
   .bottom-nav {
     display: none;
   }
+
+  .table-scroll-hint {
+    display: none !important;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -372,13 +395,13 @@ pre {
   }
 }
 
-/* iOS Safe Area support */
-@supports (padding: env(safe-area-inset-bottom)) {
-  .container {
-    padding-bottom: calc(80px + env(safe-area-inset-bottom));
-  }
-  .bottom-nav {
-    padding-bottom: env(safe-area-inset-bottom);
+@media (max-width: 420px) {
+  .table-wrapper th,
+  .table-wrapper td {
+    font-size: 12px;
+    padding: 8px 10px;
+    line-height: 1.4;
+    vertical-align: top;
   }
 }
 

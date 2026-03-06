@@ -9,6 +9,7 @@ async function loadRoles() {
     table.className = 'table-wrapper';
 
     const tableEl = document.createElement('table');
+    tableEl.className = 'roles-matrix';
     const thead = document.createElement('thead');
     const trHead = document.createElement('tr');
     data.columns.forEach((col) => {
@@ -39,6 +40,9 @@ async function loadRoles() {
     table.appendChild(tableEl);
     tableRoot.innerHTML = '';
     tableRoot.appendChild(table);
+    if (window.DevHandbook && typeof window.DevHandbook.setupTableOverflowHints === 'function') {
+      window.DevHandbook.setupTableOverflowHints(tableRoot);
+    }
     return data;
   } catch (err) {
     tableRoot.innerHTML = '<p class="muted">角色表加载失败。</p>';
