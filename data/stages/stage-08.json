@@ -125,18 +125,20 @@
   ],
   "videos": [
     {
-      "title": "SRE Fundamentals: SLI, SLO, SLA",
+      "title": "The Art of SLOs (Service Level Objectives)",
       "platform": "Google Cloud Tech",
       "duration": "18min",
-      "url": "https://www.youtube.com/watch?v=0w3lI4v3vVY",
-      "reason": "用工程化视角解释“如何定义服务质量目标”，适合把监控从工具层提升到决策层。"
+      "url": "https://www.youtube.com/watch?v=E3ReKuJ8ewA",
+      "reason": "用工程化视角解释“如何定义服务质量目标”，适合把监控从工具层提升到决策层。",
+      "embedUrl": "https://www.youtube-nocookie.com/embed/E3ReKuJ8ewA"
     },
     {
       "title": "Google Analytics 4 Tutorial for Beginners",
       "platform": "YouTube",
       "duration": "22min",
-      "url": "https://www.youtube.com/watch?v=3oC4mQfD7VY",
-      "reason": "从事件、报表到漏斗的完整入门，能快速建立 GA4 的实操框架。"
+      "url": "https://www.youtube.com/watch?v=u_ECkoHVlZ8",
+      "reason": "从事件、报表到漏斗的完整入门，能快速建立 GA4 的实操框架。",
+      "embedUrl": "https://www.youtube-nocookie.com/embed/u_ECkoHVlZ8"
     }
   ]
 }

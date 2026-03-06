@@ -129,11 +129,12 @@
       "reason": "从零开始讲 Git，有动画演示提交和分支的概念"
     },
     {
-      "title": "How to use AI Coding Assistants Effectively",
+      "title": "GitHub Copilot vs Cursor: Best AI Coding Assistant",
       "platform": "YouTube",
       "duration": "12min",
-      "url": "https://www.youtube.com/watch?v=example",
-      "reason": "实战演示跟 AI 协作写代码的最佳实践"
+      "url": "https://www.youtube.com/watch?v=KG-o4DuabkQ",
+      "reason": "实战演示跟 AI 协作写代码的最佳实践",
+      "embedUrl": "https://www.youtube-nocookie.com/embed/KG-o4DuabkQ"
     }
   ]
 }

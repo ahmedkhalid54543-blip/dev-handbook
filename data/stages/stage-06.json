@@ -125,11 +125,12 @@
   ],
   "videos": [
     {
-      "title": "Deploy to Vercel in 5 Minutes",
+      "title": "How To Deploy GitHub Project on Vercel (Step By Step)",
       "platform": "YouTube",
       "duration": "6min",
-      "url": "https://www.youtube.com/watch?v=lAJpR8Y8R18",
-      "reason": "快速看到从 GitHub 到线上链接的完整流程"
+      "url": "https://www.youtube.com/watch?v=E8xaV6fiTaA",
+      "reason": "快速看到从 GitHub 到线上链接的完整流程",
+      "embedUrl": "https://www.youtube-nocookie.com/embed/E8xaV6fiTaA"
     },
     {
       "title": "DNS Explained - How DNS Works",

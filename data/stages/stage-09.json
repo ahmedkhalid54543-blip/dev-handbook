@@ -110,11 +110,12 @@
   ],
   "videos": [
     {
-      "title": "How to Run a Project Kickoff Meeting",
+      "title": "Kickoff Meeting - Your Guide to Starting Projects",
       "platform": "YouTube",
       "duration": "17min",
-      "url": "https://www.youtube.com/watch?v=hO4dG8gP8kY",
-      "reason": "覆盖 Kickoff 的目标、议程、角色与风险对齐，适合把学习成果落到实操会议。"
+      "url": "https://www.youtube.com/watch?v=0PQLEyFEgag",
+      "reason": "覆盖 Kickoff 的目标、议程、角色与风险对齐，适合把学习成果落到实操会议。",
+      "embedUrl": "https://www.youtube-nocookie.com/embed/0PQLEyFEgag"
     },
     {
       "title": "Measure What Matters (OKR Intro)",
