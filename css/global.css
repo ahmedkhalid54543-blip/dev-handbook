@@ -287,6 +287,10 @@ pre {
   font-size: 14px;
 }
 
+.loading[hidden] {
+  display: none;
+}
+
 .loading-spinner {
   width: 16px;
   height: 16px;
