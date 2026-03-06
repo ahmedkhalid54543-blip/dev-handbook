@@ -261,6 +261,55 @@
   color: #475569;
 }
 
+.diagram-container {
+  margin: 6px 0;
+  padding: 10px;
+  border-radius: 14px;
+  background: var(--bg-primary);
+  border: 1px solid #E2E8F0;
+  box-shadow: var(--shadow-sm);
+  font-family: var(--font-family);
+}
+
+.diagram-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.diagram-text {
+  font-family: var(--font-family);
+  fill: var(--color-slate-700);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.diagram-text.title {
+  font-size: 16px;
+}
+
+.diagram-text.headline {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.diagram-text.subtle {
+  font-size: 13px;
+  font-weight: 500;
+  fill: #475569;
+}
+
+.diagram-reveal {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 420ms ease, transform 420ms ease;
+}
+
+.diagram-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .section-break {
   border: 0;
   border-top: 1px solid #E5EAF3;
@@ -531,6 +580,12 @@
   .fade-in-up {
     animation: none;
   }
+
+  .diagram-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 @media (min-width: 768px) {
@@ -542,5 +597,27 @@
 
   .role-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .diagram-container {
+    padding: 8px;
+  }
+
+  .diagram-text {
+    font-size: 14px;
+  }
+
+  .diagram-text.title {
+    font-size: 14px;
+  }
+
+  .diagram-text.headline {
+    font-size: 15px;
+  }
+
+  .diagram-text.subtle {
+    font-size: 12px;
   }
 }

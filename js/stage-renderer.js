@@ -73,6 +73,7 @@ function renderMarkdown(text) {
   const fragment = document.createDocumentFragment();
   const normalized = text.replace(/\r\n/g, '\n');
   const codeRegex = /```([\s\S]*?)```/g;
+  const diagramRegex = /\[diagram:([a-z0-9-]+)\]([\s\S]*?)\[\/diagram\]/gi;
   let lastIndex = 0;
   let match;
   const parts = [];
@@ -89,7 +90,33 @@ function renderMarkdown(text) {
     parts.push({ type: 'text', value: normalized.slice(lastIndex) });
   }
 
+  const expandedParts = [];
   parts.forEach((part) => {
+    if (part.type !== 'text') {
+      expandedParts.push(part);
+      return;
+    }
+
+    let textLastIndex = 0;
+    diagramRegex.lastIndex = 0;
+    let diagramMatch;
+    while ((diagramMatch = diagramRegex.exec(part.value)) !== null) {
+      if (diagramMatch.index > textLastIndex) {
+        expandedParts.push({ type: 'text', value: part.value.slice(textLastIndex, diagramMatch.index) });
+      }
+      expandedParts.push({
+        type: 'diagram',
+        diagramType: diagramMatch[1].trim().toLowerCase(),
+        value: diagramMatch[2].trim(),
+      });
+      textLastIndex = diagramMatch.index + diagramMatch[0].length;
+    }
+    if (textLastIndex < part.value.length) {
+      expandedParts.push({ type: 'text', value: part.value.slice(textLastIndex) });
+    }
+  });
+
+  expandedParts.forEach((part) => {
     if (part.type === 'code') {
       const pre = document.createElement('pre');
       const code = document.createElement('code');
@@ -97,6 +124,26 @@ function renderMarkdown(text) {
       code.textContent = part.value.trim();
       pre.appendChild(code);
       appendContentBlock(fragment, pre);
+      return;
+    }
+
+    if (part.type === 'diagram') {
+      const renderer = window.DevHandbookDiagrams && typeof window.DevHandbookDiagrams.render === 'function'
+        ? window.DevHandbookDiagrams.render
+        : null;
+      if (renderer) {
+        const diagramEl = renderer(part.diagramType, part.value);
+        if (diagramEl) {
+          appendContentBlock(fragment, diagramEl);
+          return;
+        }
+      }
+      const fallback = document.createElement('pre');
+      const code = document.createElement('code');
+      code.className = 'code-block language-plain';
+      code.textContent = `[diagram:${part.diagramType}]\n${part.value}\n[/diagram]`;
+      fallback.appendChild(code);
+      appendContentBlock(fragment, fallback);
       return;
     }
 
