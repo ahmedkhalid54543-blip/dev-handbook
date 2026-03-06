@@ -612,8 +612,9 @@ function setupRenderedTables() {
 function setupScrollReveal() {
   if (document.body?.dataset?.page !== 'stage') return;
 
+  // Only animate section-cards and diagram containers, NOT all .card elements
   const targets = Array.from(
-    document.querySelectorAll('.content-block, .section-card, .card, .diagram-container')
+    document.querySelectorAll('#sections-container .section-card, .diagram-container')
   );
   if (!targets.length) return;
 
