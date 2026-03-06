@@ -626,8 +626,12 @@ function setupScrollReveal() {
     (entries, activeObserver) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
-        entry.target.classList.add('revealed');
-        activeObserver.unobserve(entry.target);
+        const el = entry.target;
+        el.classList.add('revealed');
+        el.style.transition = `opacity 0.5s ease ${el.style.getPropertyValue('--reveal-delay') || '0ms'}, transform 0.5s ease ${el.style.getPropertyValue('--reveal-delay') || '0ms'}`;
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+        activeObserver.unobserve(el);
       });
     },
     { threshold: 0.1 }
@@ -635,6 +639,8 @@ function setupScrollReveal() {
 
   targets.forEach((el, index) => {
     el.classList.add('scroll-reveal');
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(24px)';
     el.style.setProperty('--reveal-delay', `${index * 50}ms`);
     observer.observe(el);
   });

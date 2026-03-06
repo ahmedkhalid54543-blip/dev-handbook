@@ -541,10 +541,7 @@
   animation: fadeInUp 520ms ease both;
 }
 
-body[data-page="stage"] .scroll-reveal {
-  opacity: 0;
-  transform: translateY(24px);
-}
+/* scroll-reveal: opacity/transform set dynamically by JS */
 
 body[data-page="stage"] .scroll-reveal.revealed {
   opacity: 1;
