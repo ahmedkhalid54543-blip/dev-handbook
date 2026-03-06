@@ -132,11 +132,12 @@
       "reason": "最快了解 Supabase 是什么，Fireship 的经典 100 秒系列"
     },
     {
-      "title": "前后端分离到底是什么意思？",
+      "title": "什么是前后端分离？你真的理解吗",
       "platform": "B站",
       "duration": "10min",
-      "url": "https://www.bilibili.com/video/BV1Ey4y1u7bP",
-      "reason": "中文讲解前后端分离的概念，有动画演示"
+      "url": "https://www.bilibili.com/video/BV16C4y1b7kq",
+      "reason": "中文讲解前后端分离的概念，有动画演示",
+      "embedUrl": "https://player.bilibili.com/player.html?bvid=BV16C4y1b7kq&autoplay=0"
     }
   ]
 }

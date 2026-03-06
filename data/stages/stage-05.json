@@ -132,11 +132,12 @@
       "reason": "从零讲清测试思维、测试类型和用例设计，适合非技术背景"
     },
     {
-      "title": "软件测试入门到实战（测试用例篇）",
+      "title": "10 分钟教会你设计测试用例",
       "platform": "B站",
       "duration": "22min",
-      "url": "https://www.bilibili.com/video/BV1Nf4y1R7s8",
-      "reason": "中文讲解如何写可执行测试用例，包含真实案例"
+      "url": "https://www.bilibili.com/video/BV1b54y1m7qM",
+      "reason": "中文讲解如何写可执行测试用例，包含真实案例",
+      "embedUrl": "https://player.bilibili.com/player.html?bvid=BV1b54y1m7qM&autoplay=0"
     }
   ]
 }

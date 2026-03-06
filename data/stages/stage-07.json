@@ -123,11 +123,12 @@
       "reason": "从零讲解 GitHub Actions 的核心概念，适合完全没接触过 CI/CD 的人"
     },
     {
-      "title": "什么是灰度发布？5 分钟搞懂",
+      "title": "到底什么是蓝绿、红黑、灰度发布？",
       "platform": "B站",
       "duration": "8min",
-      "url": "https://www.bilibili.com/video/BV1sP4y1X7Fj",
-      "reason": "用动画讲解灰度发布的原理和实际操作流程，直观易懂"
+      "url": "https://www.bilibili.com/video/BV1dq4y1U7mN",
+      "reason": "用动画讲解灰度发布的原理和实际操作流程，直观易懂",
+      "embedUrl": "https://player.bilibili.com/player.html?bvid=BV1dq4y1U7mN&autoplay=0"
     }
   ]
 }
