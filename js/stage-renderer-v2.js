@@ -393,7 +393,7 @@ function renderMarkdown(text) {
         if (!quoteLines.length) return;
         const quote = document.createElement('blockquote');
         quote.className = 'markdown-quote';
-        quote.innerHTML = formatInline(quoteLines.join('<br>'));
+        quote.innerHTML = quoteLines.map(l => formatInline(l)).join('<br>');
         appendContentBlock(fragment, quote);
         quoteLines = [];
       };
@@ -409,7 +409,7 @@ function renderMarkdown(text) {
         if (!paragraphLines.length) return;
         const textValue = paragraphLines.join('\n').trim();
         const paragraph = document.createElement('p');
-        paragraph.innerHTML = formatInline(paragraphLines.join('<br>'));
+        paragraph.innerHTML = paragraphLines.map(l => formatInline(l)).join('<br>');
         if (textValue.startsWith('Mi English') || textValue.includes('Mi English 的例子') || textValue.includes('Mi English 案例')) {
           const callout = document.createElement('div');
           callout.className = 'callout mi';
