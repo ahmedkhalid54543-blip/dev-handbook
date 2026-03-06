@@ -38,7 +38,7 @@
       "tags": [
         "必学"
       ],
-      "content": "玩游戏的时候你会存档对吧？打 Boss 前存一个，万一挂了可以读档重来。\n\nGit 就是代码的存档系统。每次你对代码做了一组改动，就存一个档（叫「提交」，commit）。改坏了？读档回去。\n\n**核心概念：**\n\n**Commit = 存档**\n每次存档包含：改了什么文件、改了什么内容、什么时间改的、一句话说明（commit message）。\n\n例子：\n- 存档 1：「添加闪卡学习页面」\n- 存档 2：「修复闪卡翻转动画 Bug」\n- 存档 3：「添加学习进度统计」\n\n**Branch = 平行宇宙**\n你在主线（main）上玩得好好的，想试一个新功能但怕搞坏现有的。那就开一个分支（branch）——相当于创建了一个平行宇宙。在分支里随便折腾，搞砸了也不影响主线。搞好了就合并回来。\n\n**Git 最基础的 3 个操作：**\n```\ngit add .        # 把改动放进「待存档」区\ngit commit -m \"添加闪卡功能\"  # 存档，附一句说明\ngit push         # 把存档同步到 GitHub（云端备份）\n```\n\n你不需要记住更多命令。这三个够你用很久了。遇到复杂操作（比如回退、合并冲突），直接让 AI 帮你。\n\n[diagram:flow]\n改代码→git add→git commit→git push\n[/diagram]"
+      "content": "玩游戏的时候你会存档对吧？打 Boss 前存一个，万一挂了可以读档重来。\n\nGit 就是代码的存档系统。每次你对代码做了一组改动，就存一个档（叫「提交」，commit）。改坏了？读档回去。\n\n**核心概念：**\n\n**Commit = 存档**\n每次存档包含：改了什么文件、改了什么内容、什么时间改的、一句话说明（commit message）。\n\n例子：\n- 存档 1：「添加闪卡学习页面」\n- 存档 2：「修复闪卡翻转动画 Bug」\n- 存档 3：「添加学习进度统计」\n\n**Branch = 平行宇宙**\n你在主线（main）上玩得好好的，想试一个新功能但怕搞坏现有的。那就开一个分支（branch）——相当于创建了一个平行宇宙。在分支里随便折腾，搞砸了也不影响主线。搞好了就合并回来。\n\n**Git 最基础的 3 个操作：**\n```\ngit add .        # 把改动放进「待存档」区\ngit commit -m \"添加闪卡功能\"  # 存档，附一句说明\ngit push         # 把存档同步到 GitHub（云端备份）\n```\n\n你不需要记住更多命令。这三个够你用很久了。遇到复杂操作（比如回退、合并冲突），直接让 AI 帮你。\n\n[diagram:flow]\n改代码→git add→git commit→git push\n[/diagram]\n\n[interactive:drag-sort]\ntitle|把 Git 操作按正确顺序排列\nitems|git push|git add .|git commit -m \"message\"|修改代码\nanswer|Must:修改代码,git add .,git commit -m \"message\",git push|Should:|Could:|Wont:\n[/interactive]"
     },
     {
       "id": "s4",
@@ -47,7 +47,7 @@
       "tags": [
         "必学"
       ],
-      "content": "Mi English 现在是 v2.6。这个版本号是怎么来的？有讲究吗？\n\n**语义化版本号格式：Major.Minor.Patch**\n\n- **Major（大版本）**：有重大变化，可能跟旧版不兼容。1.x → 2.0\n  - 例：Mi English 加了后端系统 → v3.0\n- **Minor（小版本）**：加了新功能，但兼容旧版。2.5 → 2.6\n  - 例：Mi English 加了词根学习模块 → v2.6\n- **Patch（补丁）**：修了 Bug，没加新功能。2.6.0 → 2.6.1\n  - 例：修了闪卡翻转动画的 Bug → v2.6.1\n\n**什么时候该发新版本？**\n- 修了 Bug → Patch +1\n- 加了新功能 → Minor +1\n- 大改架构或不兼容旧版 → Major +1\n\n**Changelog（更新日志）怎么写？**\n\n```markdown\n## v2.6 (2026-02-15)\n### 新增\n- 词根学习模块：支持 200+ 常用词根拆解\n- 学习进度追踪：可视化学习曲线\n\n### 修复\n- 修复了闪卡在 Safari 上的显示问题\n- 修复了课程列表偶尔加载失败的 Bug\n\n### 变更\n- 首页布局调整，突出每日学习入口\n```\n\n每次发版都写一份。给自己看（记录做了什么），也给用户看（让他们知道更新了啥）。\n\n[diagram:pyramid]\n层级1|Major 大版本|不兼容改动|#FF5252\n层级2|Minor 小版本|新增功能且兼容|#FF6B35\n层级3|Patch 修复版|修Bug不改能力|#448AFF\n[/diagram]"
+      "content": "Mi English 现在是 v2.6。这个版本号是怎么来的？有讲究吗？\n\n**语义化版本号格式：Major.Minor.Patch**\n\n- **Major（大版本）**：有重大变化，可能跟旧版不兼容。1.x → 2.0\n  - 例：Mi English 加了后端系统 → v3.0\n- **Minor（小版本）**：加了新功能，但兼容旧版。2.5 → 2.6\n  - 例：Mi English 加了词根学习模块 → v2.6\n- **Patch（补丁）**：修了 Bug，没加新功能。2.6.0 → 2.6.1\n  - 例：修了闪卡翻转动画的 Bug → v2.6.1\n\n**什么时候该发新版本？**\n- 修了 Bug → Patch +1\n- 加了新功能 → Minor +1\n- 大改架构或不兼容旧版 → Major +1\n\n**Changelog（更新日志）怎么写？**\n\n```markdown\n## v2.6 (2026-02-15)\n### 新增\n- 词根学习模块：支持 200+ 常用词根拆解\n- 学习进度追踪：可视化学习曲线\n\n### 修复\n- 修复了闪卡在 Safari 上的显示问题\n- 修复了课程列表偶尔加载失败的 Bug\n\n### 变更\n- 首页布局调整，突出每日学习入口\n```\n\n每次发版都写一份。给自己看（记录做了什么），也给用户看（让他们知道更新了啥）。\n\n[diagram:pyramid]\n层级1|Major 大版本|不兼容改动|#FF5252\n层级2|Minor 小版本|新增功能且兼容|#FF6B35\n层级3|Patch 修复版|修Bug不改能力|#448AFF\n[/diagram]\n\n[interactive:quiz]\nquestion|从 2.6.0 修复一个兼容性 Bug 后，推荐版本号是？\na|2.7.0\nb|3.0.0\nc|2.6.1\nd|2.6\nanswer|c\nexplain|只修复 Bug 不增加新功能时，应增加 Patch 位。\n[/interactive]"
     },
     {
       "id": "s5",

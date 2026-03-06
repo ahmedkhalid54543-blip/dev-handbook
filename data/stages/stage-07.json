@@ -20,7 +20,7 @@
       "tags": [
         "必学"
       ],
-      "content": "想象两家面包店。第一家：老师傅手工揉面、手工烤、手工检查每一个面包有没有烤糊——品质不错，但一天只能做 50 个。第二家：流水线自动和面、自动烤制、传感器自动检测温度——品质稳定，一天能做 5000 个。\n\nCI/CD 就是把你的代码交付过程从「手工作坊」变成「自动化工厂」。\n\n**CI（持续集成 Continuous Integration）**：每次有人提交代码，自动运行测试。就像面包出炉后自动过 X 光检查有没有异物。好处是问题能在第一时间被发现，而不是上线后用户投诉。\n\n**CD（持续部署 Continuous Deployment）**：测试通过后，自动把新版本部署到线上。就像面包检查合格后自动装箱送到门店，不需要人手动搬运。\n\n完整流程是：你提交代码 → 自动跑测试 → 测试通过 → 自动部署到线上。整个过程不需要你手动操作任何一步。Mi English 之前每次改完代码都要手动打开服务器传文件，有了 CI/CD 之后，git push 一下就全自动搞定了。\n\n[diagram:compare]\ntitle|手工发布 vs CI/CD\ncol1|手工作坊|人工测试|人工部署|速度慢且易漏\ncol2|自动化工厂|自动测试|自动部署|稳定且可追踪\n[/diagram]"
+      "content": "想象两家面包店。第一家：老师傅手工揉面、手工烤、手工检查每一个面包有没有烤糊——品质不错，但一天只能做 50 个。第二家：流水线自动和面、自动烤制、传感器自动检测温度——品质稳定，一天能做 5000 个。\n\nCI/CD 就是把你的代码交付过程从「手工作坊」变成「自动化工厂」。\n\n**CI（持续集成 Continuous Integration）**：每次有人提交代码，自动运行测试。就像面包出炉后自动过 X 光检查有没有异物。好处是问题能在第一时间被发现，而不是上线后用户投诉。\n\n**CD（持续部署 Continuous Deployment）**：测试通过后，自动把新版本部署到线上。就像面包检查合格后自动装箱送到门店，不需要人手动搬运。\n\n完整流程是：你提交代码 → 自动跑测试 → 测试通过 → 自动部署到线上。整个过程不需要你手动操作任何一步。Mi English 之前每次改完代码都要手动打开服务器传文件，有了 CI/CD 之后，git push 一下就全自动搞定了。\n\n[diagram:compare]\ntitle|手工发布 vs CI/CD\ncol1|手工作坊|人工测试|人工部署|速度慢且易漏\ncol2|自动化工厂|自动测试|自动部署|稳定且可追踪\n[/diagram]\n\n[interactive:quiz]\nquestion|CI/CD 的核心收益是什么？\na|让 commit 信息更长\nb|把测试和部署流程自动化并稳定化\nc|完全不需要测试\nd|只适用于大公司\nanswer|b\nexplain|CI/CD 本质是自动化质量检查与交付，减少人工步骤和发布风险。\n[/interactive]"
     },
     {
       "id": "s2",
@@ -29,7 +29,7 @@
       "tags": [
         "必学"
       ],
-      "content": "GitHub Actions 是 GitHub 免费提供的自动化工具，你只需要在项目里放一个 `.yml` 配置文件，它就会按你的指令自动执行任务。\n\n**.yml 文件是什么？** 就是一个纯文本的「指令清单」，告诉 GitHub：什么时候干活、干什么活。它放在项目的 `.github/workflows/` 目录下。\n\n一个最简单的例子：\n```yaml\nname: 自动测试\non:\n  push:\n    branches: [main]\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: npm install\n      - run: npm test\n```\n\n逐行翻译成人话：\n- `name`：这条流水线叫「自动测试」\n- `on: push: branches: [main]`：当有人往 main 分支推代码时触发\n- `runs-on`：在一台 Ubuntu 服务器上运行\n- `steps`：第一步拉代码，第二步装依赖，第三步跑测试\n\n**触发条件**不只是 push，还可以是：创建 Pull Request 时触发、定时触发（比如每天凌晨跑一次）、手动触发。对 Mi English 来说，最常用的就是「push 到 main 时自动部署」。\n\nGitHub Actions 对公开仓库完全免费，私有仓库每月有 2000 分钟免费额度，小项目完全够用。\n\n[diagram:flow]\npush代码→触发Action→运行测试→自动部署\n[/diagram]"
+      "content": "GitHub Actions 是 GitHub 免费提供的自动化工具，你只需要在项目里放一个 `.yml` 配置文件，它就会按你的指令自动执行任务。\n\n**.yml 文件是什么？** 就是一个纯文本的「指令清单」，告诉 GitHub：什么时候干活、干什么活。它放在项目的 `.github/workflows/` 目录下。\n\n一个最简单的例子：\n```yaml\nname: 自动测试\non:\n  push:\n    branches: [main]\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: npm install\n      - run: npm test\n```\n\n逐行翻译成人话：\n- `name`：这条流水线叫「自动测试」\n- `on: push: branches: [main]`：当有人往 main 分支推代码时触发\n- `runs-on`：在一台 Ubuntu 服务器上运行\n- `steps`：第一步拉代码，第二步装依赖，第三步跑测试\n\n**触发条件**不只是 push，还可以是：创建 Pull Request 时触发、定时触发（比如每天凌晨跑一次）、手动触发。对 Mi English 来说，最常用的就是「push 到 main 时自动部署」。\n\nGitHub Actions 对公开仓库完全免费，私有仓库每月有 2000 分钟免费额度，小项目完全够用。\n\n[diagram:flow]\npush代码→触发Action→运行测试→自动部署\n[/diagram]\n\n[interactive:fill-blank]\ntitle|填写 GitHub Actions workflow 关键字段\ntemplate|name: ____；on: ____；jobs: ____；runs-on: ____。\nhint|流程名称|触发条件|任务名|执行环境\nexample|自动测试|push 到 main|test|ubuntu-latest\n[/interactive]"
     },
     {
       "id": "s3",

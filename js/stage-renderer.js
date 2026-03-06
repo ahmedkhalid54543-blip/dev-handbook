@@ -73,7 +73,7 @@ function renderMarkdown(text) {
   const fragment = document.createDocumentFragment();
   const normalized = text.replace(/\r\n/g, '\n');
   const codeRegex = /```([\s\S]*?)```/g;
-  const diagramRegex = /\[diagram:([a-z0-9-]+)\]([\s\S]*?)\[\/diagram\]/gi;
+  const directiveRegex = /\[(diagram|interactive):([a-z0-9-]+)\]([\s\S]*?)\[\/\1\]/gi;
   let lastIndex = 0;
   let match;
   const parts = [];
@@ -98,18 +98,18 @@ function renderMarkdown(text) {
     }
 
     let textLastIndex = 0;
-    diagramRegex.lastIndex = 0;
-    let diagramMatch;
-    while ((diagramMatch = diagramRegex.exec(part.value)) !== null) {
-      if (diagramMatch.index > textLastIndex) {
-        expandedParts.push({ type: 'text', value: part.value.slice(textLastIndex, diagramMatch.index) });
+    directiveRegex.lastIndex = 0;
+    let directiveMatch;
+    while ((directiveMatch = directiveRegex.exec(part.value)) !== null) {
+      if (directiveMatch.index > textLastIndex) {
+        expandedParts.push({ type: 'text', value: part.value.slice(textLastIndex, directiveMatch.index) });
       }
       expandedParts.push({
-        type: 'diagram',
-        diagramType: diagramMatch[1].trim().toLowerCase(),
-        value: diagramMatch[2].trim(),
+        type: directiveMatch[1].trim().toLowerCase(),
+        componentType: directiveMatch[2].trim().toLowerCase(),
+        value: directiveMatch[3].trim(),
       });
-      textLastIndex = diagramMatch.index + diagramMatch[0].length;
+      textLastIndex = directiveMatch.index + directiveMatch[0].length;
     }
     if (textLastIndex < part.value.length) {
       expandedParts.push({ type: 'text', value: part.value.slice(textLastIndex) });
@@ -132,7 +132,7 @@ function renderMarkdown(text) {
         ? window.DevHandbookDiagrams.render
         : null;
       if (renderer) {
-        const diagramEl = renderer(part.diagramType, part.value);
+        const diagramEl = renderer(part.componentType, part.value);
         if (diagramEl) {
           appendContentBlock(fragment, diagramEl);
           return;
@@ -141,7 +141,27 @@ function renderMarkdown(text) {
       const fallback = document.createElement('pre');
       const code = document.createElement('code');
       code.className = 'code-block language-plain';
-      code.textContent = `[diagram:${part.diagramType}]\n${part.value}\n[/diagram]`;
+      code.textContent = `[diagram:${part.componentType}]\n${part.value}\n[/diagram]`;
+      fallback.appendChild(code);
+      appendContentBlock(fragment, fallback);
+      return;
+    }
+
+    if (part.type === 'interactive') {
+      const renderer = window.DevHandbookInteractive && typeof window.DevHandbookInteractive.render === 'function'
+        ? window.DevHandbookInteractive.render
+        : null;
+      if (renderer) {
+        const interactiveEl = renderer(part.componentType, part.value);
+        if (interactiveEl) {
+          appendContentBlock(fragment, interactiveEl);
+          return;
+        }
+      }
+      const fallback = document.createElement('pre');
+      const code = document.createElement('code');
+      code.className = 'code-block language-plain';
+      code.textContent = `[interactive:${part.componentType}]\n${part.value}\n[/interactive]`;
       fallback.appendChild(code);
       appendContentBlock(fragment, fallback);
       return;
@@ -309,6 +329,12 @@ function getYouTubeVideoId(rawUrl) {
   return null;
 }
 
+function getBilibiliVideoId(rawUrl) {
+  if (!rawUrl) return null;
+  const match = String(rawUrl).match(/(?:\/video\/|bvid=)(BV[0-9A-Za-z]+)/i);
+  return match ? match[1].toUpperCase() : null;
+}
+
 function renderVideos(stage) {
   const root = document.getElementById('stage-videos');
   if (!root) return;
@@ -322,7 +348,7 @@ function renderVideos(stage) {
   root.style.display = '';
   root.innerHTML = `
     <div class="section-title">推荐视频</div>
-    <div class="muted">可直接观看或跳转外部资源</div>
+    <div class="muted">中国大陆优先显示可直连资源，YouTube 提供外链预览卡</div>
     <div class="video-grid" style="margin-top:12px;"></div>
   `;
 
@@ -330,32 +356,50 @@ function renderVideos(stage) {
   videos.forEach((video) => {
     const card = document.createElement('article');
     card.className = 'video-card';
-    const videoId = getYouTubeVideoId(video.url);
+    const youtubeId = getYouTubeVideoId(video.url);
+    const bvid = getBilibiliVideoId(video.url);
     const title = escapeHtml(video.title || '视频资源');
     const reason = escapeHtml(video.reason || '');
-    const meta = [video.platform, video.duration].filter(Boolean).join(' · ');
-    const safeMeta = escapeHtml(meta);
+    const safeDuration = escapeHtml(video.duration || '');
+    const safePlatform = escapeHtml(video.platform || '');
     const safeUrl = escapeHtml(video.url || '#');
 
-    if (videoId) {
+    if (youtubeId) {
+      const thumbnailUrl = `https://i.ytimg.com/vi/${encodeURIComponent(youtubeId)}/hqdefault.jpg`;
+      card.classList.add('video-card-preview');
+      card.innerHTML = `
+        <a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="video-preview-card">
+          <div class="video-thumbnail" style="background-image: url('${thumbnailUrl}')">
+            <div class="play-overlay">▶</div>
+            <span class="platform-badge youtube">YouTube</span>
+            <span class="platform-badge blocked">⚠️ 需翻墙</span>
+          </div>
+          <div class="video-info">
+            <strong>${title}</strong>
+            <span class="muted">需翻墙观看${safeDuration ? ` · ${safeDuration}` : ''}</span>
+            ${reason ? `<p class="muted">${reason}</p>` : ''}
+          </div>
+        </a>
+      `;
+    } else if (bvid) {
       card.innerHTML = `
         <div class="video-embed">
           <iframe
-            src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}"
+            src="//player.bilibili.com/player.html?bvid=${encodeURIComponent(bvid)}&page=1"
             title="${title}"
             loading="lazy"
             referrerpolicy="strict-origin-when-cross-origin"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowfullscreen
           ></iframe>
         </div>
         <div class="video-info">
           <strong>${title}</strong>
-          ${safeMeta ? `<span class="muted">${safeMeta}</span>` : ''}
+          <span class="muted">Bilibili${safeDuration ? ` · ${safeDuration}` : ''}</span>
           ${reason ? `<p class="muted">${reason}</p>` : ''}
         </div>
       `;
     } else {
+      const safeMeta = [safePlatform, safeDuration].filter(Boolean).join(' · ');
       card.innerHTML = `
         <a class="video-link-card" href="${safeUrl}" target="_blank" rel="noopener noreferrer">
           <strong>${title}</strong>
