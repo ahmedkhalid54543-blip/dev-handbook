@@ -66,6 +66,15 @@
         "必学"
       ],
       "content": "PRD 写完不代表自动出代码，关键是你怎么喂给 AI。推荐三步：先贴 PRD 摘要，再限定本轮范围，最后要求 AI 先出方案后写代码。\n\n可直接复用的交付指令：\n```text\n下面是 Mi English v3.0 PRD 摘要，请先输出开发计划，不要立刻写代码。\n范围：只做闪卡页（HTML/CSS/JS），不做登录和后端。\n约束：不新增依赖；仅改动 stage.html 与 js/stage-renderer.js。\n验收：支持翻转、已掌握标记、localStorage 保存。\n```\n\n你要控制的是\"边界\"而不是\"实现细节\"。边界清楚，AI 才能稳定交付；边界模糊，AI 就会高概率越界改动。\n\n[interactive:prompt-debugger]\ntitle|Prompt Debugger：PRD 交付\nbad|帮我做一个英语学习网站，界面好看一点。\nfix|限定范围:只做闪卡页，不做登录和后端\nfix|加验收标准:翻转、已掌握、进度保存\nfix|约束改动文件:仅改 stage.html 和 js 文件\nfix|要求先出方案:先输出开发计划，确认后再写代码\nfixed|下面是 Mi English v3.0 PRD 摘要，请先输出开发计划，不要立刻写代码。范围：只做闪卡页（HTML/CSS/JS），不做登录和后端。约束：不新增依赖，仅改动 stage.html 与 js/stage-renderer.js。验收标准：支持翻转、已掌握标记、localStorage 保存进度。\n[/interactive]"
+    },
+    {
+      "id": "s7",
+      "title": "AI Builder 加餐：把 PRD 变成 Objective",
+      "estimatedMinutes": 5,
+      "tags": [
+        "加餐"
+      ],
+      "content": "PRD 更像给人看的说明书，Objective 更像给 AI 执行的任务卡。真正进入开发前，最好把一段 PRD 再压缩成四行：背景、目标、范围、验收。\n\n一个实用模板是：\n```text\n背景：为什么现在做这件事\n目标：这轮只交付什么\n范围：这轮不做什么、只允许改哪些文件或模块\n验收：哪些行为跑通才算完成\n```\n\nAI Builders 课里还把协作分成三层：**Comment、Prompt、Objective**。Comment 适合小改动，Prompt 适合解释和重构，Objective 适合跨文件任务。PRD 写完后，你要做的不是把 3 页文档原样贴给 AI，而是判断这次更像哪一层协作。\n\n对 Mi English v3.0 来说，最稳的方式通常是：PRD 管方向，Objective 管本轮执行。这样 AI 不会把整份蓝图一次性铺开，也不会在细节里迷路。"
     }
   ],
   "prompts": [

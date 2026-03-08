@@ -57,6 +57,15 @@
         "必学"
       ],
       "content": "Mi English v2.6 的词根学习功能是怎么开发的？这是一个典型的 AI 协作开发流程：\n\n**Step 1：需求描述**\nJason 跟 Codex 说：「给 Mi English 加一个词根学习模块。用户可以看到每个词汇的词根拆解，比如 'international' = inter(之间) + nation(国家) + al(形容词后缀)。」\n\n**Step 2：AI 输出第一版**\nCodex 生成了基础的 HTML 和 JS 代码。能用，但排版很丑，词根拆解用纯文字展示。\n\n**Step 3：迭代优化**\n- 第 1 轮：「把词根拆解改成卡片式展示，每个词根一张小卡片，点击翻转看含义」\n- 第 2 轮：「加颜色区分——词根用蓝色，前缀用橙色，后缀用绿色」\n- 第 3 轮：「修复手机端卡片溢出的 Bug」\n\n**Step 4：存档 & 发版**\n每轮改动都 git commit，确保可以回退。最后合并到主分支，发布 v2.6。\n\n**经验教训：**\n- 第一版永远不完美，别期望 AI 一次出满分答卷\n- 迭代时每次只改一个方面（排版→颜色→Bug），不要混在一起\n- 改之前先 commit，改坏了好回退\n\n[decision]\nscenario: AI 生成的词根功能第一版能用但排版很丑。你打算怎么迭代？\nA: 跟 AI 说「全部重做，要好看」|result:AI 又重写了一遍，这次确实好看了，但把你之前调好的交互逻辑也改没了。「全部重做」是让 AI 抹掉你所有的前期成果。|xp:5\nB: 一口气说完所有改动：「改排版、加颜色、修 Bug、加动画」|result:AI 改了一大堆，但混在一起分不清哪个改动导致了新 Bug。debug 的时候你想回退「加动画」但发现它和「改排版」的改动交织在一起。|xp:10\nC: 分步迭代，每次只改一个方面，改完立刻测试和 commit|result:完美策略。第 1 轮改排版，测试通过，commit；第 2 轮加颜色，测试通过，commit。任何一步出问题都能精准回退。|xp:30\n[/decision]\n\n[interactive:prompt-debugger]\ntitle|Prompt Debugger：Bug 修复\nbad|页面坏了，帮我修\nfix|描述具体现象:点击按钮没反应 vs 页面白屏\nfix|给出错误信息:控制台报错内容、行号\nfix|附上相关代码:出问题的文件和函数\nfix|限制修改范围:只改出问题的函数，不要重写文件\nfixed|Mi English 的 flashcard.js 第 42 行报错：TypeError: Cannot read property 'length' of undefined。点击「下一张」按钮后闪卡不切换。请只修改 handleNext() 函数，不要改其他代码。附上 flashcard.js 代码：[代码]\n[/interactive]"
+    },
+    {
+      "id": "s6",
+      "title": "从 Chat 到 Edit：让 AI 围绕目标执行",
+      "estimatedMinutes": 5,
+      "tags": [
+        "加餐"
+      ],
+      "content": "很多人和 AI 协作停留在聊天层：你一句、它一句，改到后面谁也说不清到底改了什么。AI Builders 课给出的升级思路是：**尽量从 chat 走向 edit，再从 edit 走向 objective。**\n\n在 Mi English 这类真实项目里，推荐一个稳定回路：先让 AI 分析问题 -> 再让它列出将修改的文件和函数 -> 你确认边界 -> 它只做最小改动 -> 你测试并 commit。这样每一轮都能追溯，也更容易回滚。\n\n如果任务很小，就用 Comment：直接指出哪一段有问题；如果任务中等，就用 Prompt：要求先给方案再改；如果任务跨多个模块，就用 Objective：明确目标、约束、验收和交付顺序。三者不是替代关系，而是复杂度不同的三档杠杆。\n\n真正让 AI 稳定的，不是聊天聊得多，而是每次执行前都知道：为什么改、改哪里、改完怎么验收。"
     }
   ],
   "prompts": [

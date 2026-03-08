@@ -57,6 +57,15 @@
         "必学"
       ],
       "content": "小团队不需要搞企业级的 CI/CD 配置。Mi English 作为一个前端项目，最简方案如下：\n\n**方案一：GitHub Pages + GitHub Actions（推荐）**\n- 代码推到 main 分支 → Actions 自动构建 → 自动部署到 GitHub Pages\n- 零成本，适合静态网站\n- 配置文件不超过 20 行\n\n**方案二：Vercel 自动部署**\n- 连接 GitHub 仓库后，每次 push 自动部署\n- 甚至不用写配置文件，平台全自动\n- 还能自动给每个 PR 生成预览链接\n\n**Mi English 的实际流程**：\n1. Jason 改了闪卡的一个 Bug，push 到 GitHub\n2. GitHub Actions 自动跑 lint 检查（代码格式有没有问题）\n3. 检查通过 → 自动部署到线上\n4. 如果检查失败 → 邮件通知 Jason，线上版本不受影响\n\n关键原则：**能自动化的就不要手动做**。哪怕只是省 2 分钟，一年下来也省了几十小时。而且自动化消除了人为失误——你不会忘记跑测试，因为机器每次都会跑。\n\n对于更大的项目，还会加入自动化测试、代码审查、安全扫描等步骤，但 Mi English 目前这个简化版足够了。\n\n[interactive:quiz]\nquestion|Mi English 选择 CI/CD 方案时，以下哪个是最务实的考量？\na|一定要用 Jenkins，因为它最专业\nb|选最复杂的方案，显得技术实力强\nc|选配置简单、免费、适合小项目的方案\nd|不需要 CI/CD，手动部署更有掌控感\nanswer|c\nexplain|小团队的第一原则是「够用就好」。GitHub Actions 免费、配置简单、和 GitHub 无缝集成；Vercel 更是零配置自动部署。把省下来的时间花在产品本身。\n[/interactive]"
+    },
+    {
+      "id": "s6",
+      "title": "Architect 加餐：可控性比自动化更重要",
+      "estimatedMinutes": 4,
+      "tags": [
+        "加餐"
+      ],
+      "content": "做 CI/CD 很容易陷入一个误区：只要自动化越多，就一定越先进。AI Architect 课给出的标准更硬：**好的系统不是自动化最多，而是可控性最高。**\n\n所谓可控性，就是你知道谁能开功能、谁能关功能、什么情况下自动继续、什么情况下必须停下来等人判断。Feature Flag、灰度比例、回滚条件，本质上都属于同一个控制面。\n\n所以在设计 Mi English 的流水线时，优先级应该是：先保证能暂停、能回滚、能看见异常，再追求一步到位全自动。没有控制面的自动化，只是更快地把错误推给所有人。\n\n记一句就够：自动化负责加速，可控性负责保命。"
     }
   ],
   "prompts": [
