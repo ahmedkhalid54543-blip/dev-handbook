@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>App 研发全链路</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/variables.css" />
   <link rel="stylesheet" href="css/global.css?v=3" />
   <link rel="stylesheet" href="css/components.css?v=2" />
@@ -17,15 +20,8 @@
       </div>
       <div class="progress-ring">
         <svg width="76" height="76">
-          <circle cx="38" cy="38" r="32" stroke="#E6EBF5" stroke-width="8" fill="none" />
-          <circle data-progress cx="38" cy="38" r="32" stroke="url(#progressGradient)" stroke-width="8" stroke-linecap="round" fill="none" />
-          <defs>
-            <linearGradient id="progressGradient" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#FF6B35" />
-              <stop offset="50%" stop-color="#7C4DFF" />
-              <stop offset="100%" stop-color="#66BB6A" />
-            </linearGradient>
-          </defs>
+          <circle cx="38" cy="38" r="32" stroke="var(--color-gray-200)" stroke-width="8" fill="none" />
+          <circle data-progress cx="38" cy="38" r="32" stroke="var(--color-brand)" stroke-width="8" stroke-linecap="round" fill="none" />
         </svg>
         <div class="progress-text">0/9</div>
       </div>

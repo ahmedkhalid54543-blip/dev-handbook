@@ -1,26 +1,54 @@
 :root {
-  --color-orange: #FF6B35;
-  --color-red: #FF5252;
-  --color-purple: #7C4DFF;
-  --color-blue: #448AFF;
-  --color-cyan: #00BCD4;
-  --color-green: #66BB6A;
-  --color-slate-700: #334155;
-  --color-slate-800: #1F2937;
-  --bg-primary: #F5F7FA;
+  /* 品牌色 — 只保留一个主色 */
+  --color-brand: #FF6B35;
+  --color-brand-dark: #E5561F;
+  --color-brand-light: #FF8A5C;
+
+  /* 暖灰系统 — 所有灰色带橙调 */
+  --color-gray-900: #1C1410;
+  --color-gray-800: #2E2520;
+  --color-gray-700: #4A3F38;
+  --color-gray-600: #6B5E55;
+  --color-gray-500: #8C7D73;
+  --color-gray-400: #B0A49C;
+  --color-gray-300: #D4CBC5;
+  --color-gray-200: #EDE8E4;
+  --color-gray-100: #F7F4F1;
+  --color-gray-50: #FDFCFB;
+
+  /* 功能色（最小化） */
+  --color-success: #4CAF7D;
+  --color-error: #E05252;
+
+  /* 背景 */
+  --bg-primary: var(--color-gray-100);
   --bg-card: #FFFFFF;
-  --text-primary: #333333;
-  --text-secondary: #666666;
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.08), 0 4px 8px rgba(15, 23, 42, 0.06);
-  --shadow-md: 0 2px 6px rgba(15, 23, 42, 0.10), 0 12px 24px rgba(15, 23, 42, 0.08);
-  --shadow-lg: 0 6px 16px rgba(15, 23, 42, 0.12), 0 24px 48px rgba(15, 23, 42, 0.10);
-  --radius-card: 16px;
-  --radius-button: 8px;
+  --bg-code: var(--color-gray-900);
+
+  /* 文字 */
+  --text-primary: var(--color-gray-900);
+  --text-secondary: var(--color-gray-600);
+  --text-muted: var(--color-gray-400);
+
+  /* 阴影 */
+  --shadow-sm: 0 1px 3px rgba(28, 20, 16, 0.08);
+  --shadow-md: 0 4px 12px rgba(28, 20, 16, 0.10);
+  --shadow-lg: 0 12px 32px rgba(28, 20, 16, 0.12);
+
+  /* 圆角 */
+  --radius-card: 10px;
+  --radius-button: 6px;
+  --radius-sm: 4px;
+
+  /* 间距 */
   --spacing-page-desktop: 48px;
-  --spacing-page-mobile: 16px;
+  --spacing-page-mobile: 20px;
   --bottom-nav-height: 56px;
   --bottom-safe-area: env(safe-area-inset-bottom, 0px);
   --bottom-nav-total: calc(var(--bottom-nav-height) + var(--bottom-safe-area));
-  --font-family: 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
-  --font-mono: 'Menlo', 'Monaco', monospace;
+
+  /* 字体 */
+  --font-family: 'Noto Sans SC', 'PingFang SC', system-ui, sans-serif;
+  --font-display: 'Noto Serif SC', 'PingFang SC', Georgia, serif;
+  --font-mono: 'JetBrains Mono', 'Menlo', monospace;
 }
